@@ -18,6 +18,9 @@ ISCompare is implemented on python and has the following aditional requirements:
 
 To install ISCompare simply download ISCompare folder and install all the required third party modules and programs.
 
+### Algorithm overview
+![alt text] (https://github.com/maurijlozano/ISCompare/blob/master/overview.png "Algorithm overview")
+
 ### Running ISCompare
 
 To run ISCompare open a terminal and type: 
