@@ -8,3 +8,6 @@
 * Table S7. Comparison of ISCompare and ISSeeker using E. meliloti genomes. E. meliloti 1021 was used as reference, and compared to GR4 and U1022 strains as queries. In the case of GR4 strain, the -S option was also evaluated. As ISSeeker only can analyse one IS at a time, only ISRm2011-2 location was analysed using both programs. Sheet 1: ISCompare vs ISSeeker results summary. Sheet 2: ISSeeker, 1021 vs GR4 results. Sheet 3: ISCompare,  1021 vs GR4 results. Sheet 4: ISCompare with -S 5000 setting. 1021 vs GR4 results. Sheet 5: ISSeeker, 1021 vs USDA1022 results. Sheet 6: ISCompare. 1021 vs USDA1022 results. Sheet 7: ISCompare with -S 5000 setting. 1021 vs USDA1022 results.
 * Table S8. Comparison of ISCompare and ISSeeker using P. aeruginosa genomes. Sheet 1: ISCompare vs ISSeeker results summary. Sheet 2: ISSeeker results for all the analysed P. aeruginosa strains. Sheet 3:  results for all the analysed P. aeruginosa strains.
 * Table S9. Comparison of B. pertussis TOHAMA I with strains BpH915 and BpI127 containing a IS481 insertion on the pertactin autotransporter gene. Sheet 1: Results of TOHAMA I vs BpH915 using ISCompare. Sheet 2: Results of TOHAMA I vs BpI127 using ISCompare.
+
+# Supplementary Files
+* ContigBlastHit.pm; Supplementary material, file S1.
