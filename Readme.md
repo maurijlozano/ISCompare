@@ -92,9 +92,10 @@ optional arguments:
   -rs, --SLIS           Report IS with the same location (SLIS)...
 ```
 
- ISCompare requires query and reference genomes in genbank flat format, or its corresponding accession numbers, as input. An optional multifasta DNA file containing all the ISs sequences to be searched in the query and reference genomes can be supplied, otherwise use the -I option which will ISFinderBlast.py script to launch an IS search at ISFinder webpage (http://www-is.biotoul.fr) and download all the found IS sequences. 
+ISCompare requires query and reference genomes in genbank flat format, or its corresponding accession numbers, as input. An optional multifasta DNA file containing all the ISs sequences to be searched in the query and reference genomes can be supplied, otherwise use the -I option which will ISFinderBlast.py script to launch an IS search at ISFinder webpage (http://www-is.biotoul.fr) and download all the found IS sequences.
 
 Optionally, a compilation of IS sequences from ISFinder database can be downloaded from [here](https://github.com/thanhleviet/ISfinder-sequences).
+ISCompare uses the following naming convention for ISs: ISname_ISgroup_ISfamily (Required for discrimination between related ISs).
 
 To run with the default parameters type:
 
