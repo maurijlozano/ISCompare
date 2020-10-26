@@ -8,7 +8,7 @@ ISCompare is implemented on python and has the following aditional requirements:
 
 ##### Third party python modules:
 
-* [Biopython](https://biopython.org/)
+* [Biopython](https://biopython.org/) (Tested with Biopython v 1.76)
 * [DNA_features_viewer](https://github.com/Edinburgh-Genome-Foundry/DnaFeaturesViewer)
 * [Pandas](https://pandas.pydata.org/)
 * [Numpy](https://numpy.org/)
