@@ -8,11 +8,11 @@ ISCompare is implemented on python and has the following aditional requirements:
 
 ##### Third party python modules:
 
-* [Biopython](https://biopython.org/) (Tested with Biopython v 1.76)
-* [DNA_features_viewer](https://github.com/Edinburgh-Genome-Foundry/DnaFeaturesViewer)
-* [Pandas](https://pandas.pydata.org/)
-* [Numpy](https://numpy.org/)
-* [mechanize](https://mechanize.readthedocs.io/en/latest/)
+* [Biopython](https://biopython.org/) (Tested with Biopython v1.76)
+* [DNA_features_viewer](https://github.com/Edinburgh-Genome-Foundry/DnaFeaturesViewer) (Tested with v3.0.3)
+* [Pandas](https://pandas.pydata.org/) (Tested with v1.0.3)
+* [Numpy](https://numpy.org/) (Tested with v1.18.4)
+* [mechanize](https://mechanize.readthedocs.io/en/latest/) (Tested with v0.4.5)
 
 [Blastn](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
 * For windows users: For blast to run correctly some environment variables need to be created:
