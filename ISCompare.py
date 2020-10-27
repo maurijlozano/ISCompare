@@ -4,8 +4,8 @@ ISCompare is a program designed to look for and compare insertion sequence posit
 Written by Mauricio J. Lozano
 UNLP - CONICET - Instituto de Biotecnología y Biología Molecular (IBBM)
 '''
-VERSION="RC19"
-REF="None yet"
+VERSION="1.0.0"
+REF="\n\n   Easy identification of insertion sequence mobilization events\n   in related bacterial strains with ISCompare. \n   E.G. Mogro, N. Ambrosis, M.J. Lozano\n   doi: https://doi.org/10.1101/2020.10.16.342287\n   Instituto de Biotecnología y Biología Molecular\n   CONICET - CCT La Plata - UNLP - FCE\n"
 GITHUB="https://github.com/maurijlozano/ISCompare"
 
 #Local modules
@@ -555,7 +555,7 @@ def extractSeqFromREFGB(gbfileID,IStable,IStableName,surroundingLen2, shift):
 	f.close()
 	pass
 
-def firterLowLen(blastResTab,ISdiff):
+def filterLowLen(blastResTab,ISdiff):
 	#Filter low length IS blast matches from the analysis. Filters IS scaffolds. Adds information.
 	for idx, row in blastResTab.iterrows():
 		blastResTab.loc[idx,"IScover"] = (int(blastResTab.loc[idx]["length"]) / int(blastResTab.loc[idx]["slen"]) * 100)
@@ -680,7 +680,7 @@ def findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta):
 	#filter short IS that are not located near and end of the scaffold
 	#Also discard scaffolds that have a small length and match all its length with an IS hit.
 	modedBlastResTab = tagConsecutiveIS(modedBlastResTab)
-	modedBlastResTab = firterLowLen(modedBlastResTab,ISdiff)
+	modedBlastResTab = filterLowLen(modedBlastResTab,ISdiff)
 	modedBlastResTab = modifyBlastResTab(modedBlastResTab)
 	processedIS=len(modedBlastResTab)
 	#stats
@@ -835,13 +835,13 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 		blastResTab["cutoff"] = np.nan
 		blastResTab["qcovh"] = np.nan
 		blastResTab["ISID"] = np.nan
-	#filter query coverage cut-off.
+	#filter only left or right or both sides sequences blast hits by cutoffs. Partial or bad hits.
 	keep = blastResTab[(blastResTab['length'] > minAlnLength) & (blastResTab['qcovh'] > blastResTab["cutoff"])]
 	#Find pairs of hits, each half of the concatenated sequence
 	keepUL = list(keep['qseqid'].unique())
 	keep = findpairs(keep)
 	#
-	#Discard matches on scaffold ends,
+	#Discard mathces on scaffold ends,
 	matchOnScaffoldEnd = keep[((keep['sstart'] < 25) & (keep['Extract'] == 'L'))]
 	matchOnScaffoldEnd = matchOnScaffoldEnd.append(keep[((keep['send'] > keep['slen'] - 25) & (keep['Extract'] == 'R'))])
 	matchOnScaffoldEnd = list(matchOnScaffoldEnd['qseqid'].unique())
@@ -995,7 +995,7 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	goodqc = pd.DataFrame(found[found['qseqid'].isin(keepUL)])
 	#Discarded because of multiple blast hits
 	multiplehits = pd.DataFrame(goodqc[~goodqc['qseqid'].isin(keepUL2)])
-	multiplehits['Observations'] = '6. Discarded for analysis. There were multiple blastn hits, or left and right pairs could not be determined.'
+	multiplehits['Observations'] = '6. Discarded for analysis. There were multiple blastn hits, and left and right pairs could not be determined.'
 	#append into a single table
 	missedScaffolds = notfound.append(lowqc)
 	missedScaffolds = missedScaffolds.append(multiplehits)

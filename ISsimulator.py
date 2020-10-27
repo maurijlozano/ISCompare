@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 '''
 ISsimulator is a program designed to generate random insertions of a desired IS into a provided genome.
-Version:0.1
 Written by Mauricio J. Lozano
 UNLP - CONICET - Instituto de Biotecnología y Biología Molecular (IBBM)
 '''
-VERSION="0.1"
-REF="None yet"
+VERSION="0.1.1"
+REF="\n\n   Easy identification of insertion sequence mobilization events\n   in related bacterial strains with ISCompare. \n   E.G. Mogro, N. Ambrosis, M.J. Lozano\n   doi: https://doi.org/10.1101/2020.10.16.342287\n   Instituto de Biotecnología y Biología Molecular\n   CONICET - CCT La Plata - UNLP - FCE\n"
 GITHUB="https://github.com/maurijlozano/ISMapper"
 
 #modules
@@ -19,7 +18,6 @@ from Bio import SeqIO
 from Bio import SeqFeature
 from Bio.SeqFeature import FeatureLocation
 from Bio.SeqRecord import SeqRecord
-from Bio.Alphabet import IUPAC
 
 #argument parsing
 def parseArgs():
@@ -107,7 +105,9 @@ if __name__ == "__main__":
 	outputTable = str(os.path.splitext(output)[0])+".csv"
 	outputfasta = str(os.path.splitext(output)[0])+".fa"
 	ninsertions = int(args.ninsertions)
-	if not args.directRepeats:
+	if args.directRepeats:
+		directRepeats = int(args.directRepeats)
+	else:
 		directRepeats = 0
 	isSeq = args.IS
 	#Load IS and Genome
@@ -116,22 +116,6 @@ if __name__ == "__main__":
 	annotateIS(IS)
 	#insert record into GB file!! record slices can be added with all their features...!!!! record[start:end] + record...
 	f = open(outputTable,'w+')
-	# if len(records) == 1:
-	# 	record = records[0]
-	# 	recInfo = getRecordInfo(record)
-	# 	insertionCoords = []
-	# 	for i in range(0,ninsertions):
-	# 		insertionCoords.append(random.randint(0,len(record.seq)))
-	# 	insertionCoords.sort()
-	# 	for insertionCoord in insertionCoords:
-	# 		record = generateRandomInsertion(record,IS,insertionCoord)
-	# 		f.write(str(i)+','+str(recInfo[0])+','+str(insertionCoord)+"\n")
-	# 	record.seq.alphabet = IUPAC.IUPACUnambiguousDNA()
-	# 	setRecordInfo(record,recInfo)
-	# 	SeqIO.write(record,output,'gb')
-	# 	SeqIO.write(record,outputfasta,'fasta')
-	# # The insertions must be randomly distributed in all records... derive a probability depending on record length.
-	# else:
 	recordIDXs = list(range(0,len(records)))
 	recordLengths = [len(record.seq) for record in records]
 	totalLength = sum(recordLengths)
@@ -151,7 +135,7 @@ if __name__ == "__main__":
 		for insertionCoord in insertionCoords:
 			records[rec] = generateRandomInsertion(records[rec],IS,insertionCoord)
 			f.write(str(recInfo[0])+','+str(insertionCoord)+"\n")
-		records[rec].seq.alphabet = IUPAC.IUPACUnambiguousDNA()
+		records[rec].annotations["molecule_type"] = "DNA"
 		setRecordInfo(records[rec],recInfo)
 	SeqIO.write(records,output,'gb')
 	SeqIO.write(records,outputfasta,'fasta')
