@@ -4,7 +4,7 @@ ISCompare is a program designed to look for and compare insertion sequence posit
 Written by Mauricio J. Lozano
 UNLP - CONICET - Instituto de Biotecnología y Biología Molecular (IBBM)
 '''
-VERSION="1.0.0"
+VERSION="1.0.1"
 REF="\n\n   Easy identification of insertion sequence mobilization events\n   in related bacterial strains with ISCompare. \n   E.G. Mogro, N. Ambrosis, M.J. Lozano\n   doi: https://doi.org/10.1101/2020.10.16.342287\n   Instituto de Biotecnología y Biología Molecular\n   CONICET - CCT La Plata - UNLP - FCE\n"
 GITHUB="https://github.com/maurijlozano/ISCompare"
 
@@ -1552,7 +1552,7 @@ def recordsDict(filename):
 		recordsDictionary[record.id] = modifyWarpingFeatures(record)
 	return 	recordsDictionary
 
-def plot_funcs(FinalResults, max_row):
+def plot_funcs(ISs, max_row, page):
 	"""
 	Function that plots all given ISs in multiple figs, to accomodate max_col * max_row
 	IS per page.
@@ -1563,64 +1563,126 @@ def plot_funcs(FinalResults, max_row):
 	##created figures go here
 	figs = []
 	##looping through ISs N at a time:
-	page=1
-	for ISs in niter(FinalResults, N):
-		##figure and subplots
-		n = len(ISs)
-		fig, axes = plt.subplots(N,3,figsize=(8.27*3,11.7*3),dpi=150)
-		fig.suptitle('Differential IS insertions graphic report. Page '+ str(page), fontsize=24)
-		if  n < N:
-			for ax in axes[n:,:].flat:
-				ax.remove()
-		i=0
-		##plotting functions
-		for IS in ISs.iterrows():
-			#case IS on query or IS on ref...
-			if IS[1]['Description'] == 'IS only present in query Strain.':
-				ID1 = IS[1]['Query.ID1']
-				start1 = int(IS[1]['Start1'] - 3000)
-				# end1 = IS[1]['End1']
-				# start2 = IS[1]['Start2']
-				end2 = int(IS[1]['End2'] + 3000)
-				ISstart = int(IS[1]['ISstart'])
-				ISend = int(IS[1]['ISend'])
-				name = IS[1]['Query.ID1'] + " - " + IS[1]['ISID'] +" Start: " + str(ISstart) + " End: " + str(ISend)
-				#
-				record = queryRecords[ID1]
-				recordLength = len(record)
-				if start1 < 1:
-					start1 = 1
-				if end2 > recordLength:
-					end2 = recordLength
-				record = record.upper()
-				record = add_new_feature(record,ISstart,ISend,"DetectedIS",IS[1]['ISID'])
-				record = add_new_feature(record,int(IS[1]['Start1']),int(IS[1]['End1']),"QIF","Flank 1")
-				record = add_new_feature(record,int(IS[1]['Start2']),int(IS[1]['End2']),"QIF2","Flank 2")
-				graphic_record = MyCustomTranslator().translate_record(record)
-				graphic_record.ticks_resolution = 2000
-				croped_graphic_record = graphic_record.crop((start1, end2))
-				ax1 = axes[i][0]
-				ax2 = axes[i][1]
-				ax3 = axes[i][2]
-				ax, _ = croped_graphic_record.plot(ax=ax1, figure_width=7, strand_in_label_threshold=7)
-				ax1.set_title(name,loc='left',y=-0.2)
-				#Ref plots REF1/REF2
-				Rstart1 = IS[1]['REF.Start1']
-				if 	Rstart1 == Rstart1:
-					REFID1 = IS[1]['REF.ID1']
-					REFID2 = IS[1]['REF.ID2']
-					Rstart1 = int(IS[1]['REF.Start1'])
-					Rend1 = IS[1]['REF.End1']
-					Rstart2 = IS[1]['REF.Start2']
-					Rend2 = IS[1]['REF.End2']
-					if Rstart2 == Rstart2:
-						Rend1 = int(IS[1]['REF.End1'])
-						Rstart2 = int(IS[1]['REF.Start2'])
-						Rend2 = int(IS[1]['REF.End2'])
-						record1 = refRecords[REFID1]
-						recordLength1 = len(record1)
-						#REF.ID2 != nan
-						if REFID2 == REFID2:
+	##figure and subplots
+	n = len(ISs)
+	fig, axes = plt.subplots(N,3,figsize=(8.27*3,11.7*3),dpi=150)
+	fig.suptitle('Differential IS insertions graphic report. Page '+ str(page), fontsize=24)
+	if  n < N:
+		for ax in axes[n:,:].flat:
+			ax.remove()
+	i=0
+	##plotting functions
+	for IS in ISs.iterrows():
+		#case IS on query or IS on ref...
+		if IS[1]['Description'] == 'IS only present in query Strain.':
+			ID1 = IS[1]['Query.ID1']
+			start1 = int(IS[1]['Start1'] - 3000)
+			# end1 = IS[1]['End1']
+			# start2 = IS[1]['Start2']
+			end2 = int(IS[1]['End2'] + 3000)
+			ISstart = int(IS[1]['ISstart'])
+			ISend = int(IS[1]['ISend'])
+			name = IS[1]['Query.ID1'] + " - " + IS[1]['ISID'] +" Start: " + str(ISstart) + " End: " + str(ISend)
+			#
+			record = queryRecords[ID1]
+			recordLength = len(record)
+			if start1 < 1:
+				start1 = 1
+			if end2 > recordLength:
+				end2 = recordLength
+			record = record.upper()
+			record = add_new_feature(record,ISstart,ISend,"DetectedIS",IS[1]['ISID'])
+			record = add_new_feature(record,int(IS[1]['Start1']),int(IS[1]['End1']),"QIF","Flank 1")
+			record = add_new_feature(record,int(IS[1]['Start2']),int(IS[1]['End2']),"QIF2","Flank 2")
+			graphic_record = MyCustomTranslator().translate_record(record)
+			graphic_record.ticks_resolution = 2000
+			croped_graphic_record = graphic_record.crop((start1, end2))
+			ax1 = axes[i][0]
+			ax2 = axes[i][1]
+			ax3 = axes[i][2]
+			ax, _ = croped_graphic_record.plot(ax=ax1, figure_width=7, strand_in_label_threshold=7)
+			ax1.set_title(name,loc='left',y=-0.2)
+			#Ref plots REF1/REF2
+			Rstart1 = IS[1]['REF.Start1']
+			if 	Rstart1 == Rstart1:
+				REFID1 = IS[1]['REF.ID1']
+				REFID2 = IS[1]['REF.ID2']
+				Rstart1 = int(IS[1]['REF.Start1'])
+				Rend1 = IS[1]['REF.End1']
+				Rstart2 = IS[1]['REF.Start2']
+				Rend2 = IS[1]['REF.End2']
+				if Rstart2 == Rstart2:
+					Rend1 = int(IS[1]['REF.End1'])
+					Rstart2 = int(IS[1]['REF.Start2'])
+					Rend2 = int(IS[1]['REF.End2'])
+					record1 = refRecords[REFID1]
+					recordLength1 = len(record1)
+					#REF.ID2 != nan
+					if REFID2 == REFID2:
+						if Rstart1 - 3000 < 1:
+							Rstart1 = 1
+						else:
+							Rstart1 = Rstart1 - 3000
+						if Rend1 + 3000 > recordLength1:
+							Rend1 = recordLength1
+						else:
+							Rend1 = Rend1 + 3000
+						record2 = refRecords[REFID2]
+						recordLength2 = len(record2)
+						if Rstart2 - 3000 < 1:
+							Rstart2 = 1
+						else:
+							Rstart2 = Rstart2 - 3000
+						if Rend2 + 3000 > recordLength2:
+							Rend2 = recordLength2
+						else:
+							Rend2 = Rend2 + 3000
+						#here two plots
+						record1 = record1.upper()
+						record2 = record2.upper()
+						record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"RA","Match 1")
+						record2 = add_new_feature(record2,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"RA2","Match 2")
+						graphic_record1 = MyCustomTranslator().translate_record(record1)
+						graphic_record1.ticks_resolution = 2000
+						croped_graphic_record1 = graphic_record1.crop((Rstart1, Rend1))
+						ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+						name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
+						ax2.set_title(name,loc='left',y=-0.2)
+						graphic_record2 = MyCustomTranslator().translate_record(record2)
+						graphic_record2.ticks_resolution = 2000
+						croped_graphic_record2 = graphic_record2.crop((Rstart2, Rend2))
+						ax, _ = croped_graphic_record2.plot(ax=ax3, figure_width=7, strand_in_label_threshold=7)
+						name = IS[1]['REF.ID2'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
+						ax3.set_title(name,loc='left',y=-0.2)
+					else:
+						if (abs(Rstart1 - Rstart2) < 10000) or (abs(Rstart1 - Rstart2) < 3*shift):
+							# here 1 plot instead of 2
+							if Rstart1 > Rstart2:
+								Rstart = Rstart2
+								Rend = Rend1
+							else:
+								Rstart = Rstart1
+								Rend = Rend2
+							if Rstart - 3000 < 1:
+								Rstart = 1
+							else:
+								Rstart = Rstart - 3000
+							if Rend + 3000 > recordLength1:
+								Rend = recordLength1
+							else:
+								Rend = Rend + 3000
+							record1 = record1.upper()
+							record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"RA","Match 1")
+							record1 = add_new_feature(record1,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"RA2","Match 2")
+							graphic_record1 = MyCustomTranslator().translate_record(record1)
+							graphic_record1.ticks_resolution = 2000
+							croped_graphic_record1 = graphic_record1.crop((Rstart, Rend))
+							ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+							name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
+							ax2.set_title(name,loc='left',y=-0.2)
+							ax3.remove()
+						else:
+							#here two plots
 							if Rstart1 - 3000 < 1:
 								Rstart1 = 1
 							else:
@@ -1629,95 +1691,120 @@ def plot_funcs(FinalResults, max_row):
 								Rend1 = recordLength1
 							else:
 								Rend1 = Rend1 + 3000
-							record2 = refRecords[REFID2]
-							recordLength2 = len(record2)
 							if Rstart2 - 3000 < 1:
 								Rstart2 = 1
 							else:
 								Rstart2 = Rstart2 - 3000
-							if Rend2 + 3000 > recordLength2:
-								Rend2 = recordLength2
+							if Rend2 + 3000 > recordLength1:
+								Rend2 = recordLength1
 							else:
 								Rend2 = Rend2 + 3000
-							#here two plots
 							record1 = record1.upper()
-							record2 = record2.upper()
 							record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"RA","Match 1")
-							record2 = add_new_feature(record2,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"RA2","Match 2")
+							record1 = add_new_feature(record1,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"RA2","Match 2")
 							graphic_record1 = MyCustomTranslator().translate_record(record1)
 							graphic_record1.ticks_resolution = 2000
 							croped_graphic_record1 = graphic_record1.crop((Rstart1, Rend1))
 							ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
 							name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
 							ax2.set_title(name,loc='left',y=-0.2)
-							graphic_record2 = MyCustomTranslator().translate_record(record2)
-							graphic_record2.ticks_resolution = 2000
-							croped_graphic_record2 = graphic_record2.crop((Rstart2, Rend2))
+							croped_graphic_record2 = graphic_record1.crop((Rstart2, Rend2))
 							ax, _ = croped_graphic_record2.plot(ax=ax3, figure_width=7, strand_in_label_threshold=7)
-							name = IS[1]['REF.ID2'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
+							name = IS[1]['REF.ID1'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
 							ax3.set_title(name,loc='left',y=-0.2)
-						else:
-							if (abs(Rstart1 - Rstart2) < 10000) or (abs(Rstart1 - Rstart2) < 3*shift):
-								# here 1 plot instead of 2
-								if Rstart1 > Rstart2:
-									Rstart = Rstart2
-									Rend = Rend1
-								else:
-									Rstart = Rstart1
-									Rend = Rend2
-								if Rstart - 3000 < 1:
-									Rstart = 1
-								else:
-									Rstart = Rstart - 3000
-								if Rend + 3000 > recordLength1:
-									Rend = recordLength1
-								else:
-									Rend = Rend + 3000
-								record1 = record1.upper()
-								record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"RA","Match 1")
-								record1 = add_new_feature(record1,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"RA2","Match 2")
-								graphic_record1 = MyCustomTranslator().translate_record(record1)
-								graphic_record1.ticks_resolution = 2000
-								croped_graphic_record1 = graphic_record1.crop((Rstart, Rend))
-								ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
-								name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
-								ax2.set_title(name,loc='left',y=-0.2)
-								ax3.remove()
-							else:
-								#here two plots
-								if Rstart1 - 3000 < 1:
-									Rstart1 = 1
-								else:
-									Rstart1 = Rstart1 - 3000
-								if Rend1 + 3000 > recordLength1:
-									Rend1 = recordLength1
-								else:
-									Rend1 = Rend1 + 3000
-								if Rstart2 - 3000 < 1:
-									Rstart2 = 1
-								else:
-									Rstart2 = Rstart2 - 3000
-								if Rend2 + 3000 > recordLength1:
-									Rend2 = recordLength1
-								else:
-									Rend2 = Rend2 + 3000
-								record1 = record1.upper()
-								record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"RA","Match 1")
-								record1 = add_new_feature(record1,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"RA2","Match 2")
-								graphic_record1 = MyCustomTranslator().translate_record(record1)
-								graphic_record1.ticks_resolution = 2000
-								croped_graphic_record1 = graphic_record1.crop((Rstart1, Rend1))
-								ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
-								name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
-								ax2.set_title(name,loc='left',y=-0.2)
-								croped_graphic_record2 = graphic_record1.crop((Rstart2, Rend2))
-								ax, _ = croped_graphic_record2.plot(ax=ax3, figure_width=7, strand_in_label_threshold=7)
-								name = IS[1]['REF.ID1'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
-								ax3.set_title(name,loc='left',y=-0.2)
-					elif Rend1 == Rend1:
-						Rend1 = int(IS[1]['REF.End1'])
-						record1 = refRecords[REFID1]
-						recordLength1 = len(record1)
+				elif Rend1 == Rend1:
+					Rend1 = int(IS[1]['REF.End1'])
+					record1 = refRecords[REFID1]
+					recordLength1 = len(record1)
+					if Rstart1 - 3000 < 1:
+						Rstart1 = 1
+					else:
+						Rstart1 = Rstart1 - 3000
+					if Rend1 + 3000 > recordLength1:
+						Rend1 = recordLength1
+					else:
+						Rend1 = Rend1 + 3000
+					# Here only 1 plot
+					record1 = record1.upper()
+					record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"RA3","Match")
+					graphic_record = MyCustomTranslator().translate_record(record1)
+					graphic_record.ticks_resolution = 2000
+					croped_graphic_record = graphic_record.crop((Rstart1, Rend1))
+					ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+					name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
+					ax2.set_title(name,loc='left',y=-0.2)
+					ax3.remove()
+				elif Rend2 == Rend2 :
+					Rend2 = int(IS[1]['REF.End2'])
+					record1 = refRecords[REFID1]
+					recordLength1 = len(record1)
+					if Rstart1 - 3000 < 1:
+						Rstart1 = 1
+					else:
+						Rstart1 = Rstart1 - 3000
+					if Rend2 + 3000 > recordLength1:
+						Rend2 = recordLength1
+					else:
+						Rend2 = Rend2 + 3000
+					# Here only 1 plot
+					record1 = record1.upper()
+					record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End2']),"RA3","Match 1-2")
+					graphic_record = MyCustomTranslator().translate_record(record1)
+					graphic_record.ticks_resolution = 2000
+					croped_graphic_record = graphic_record.crop((Rstart1, Rend2))
+					ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+					name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend2)
+					ax2.set_title(name,loc='left',y=-0.2)
+					ax3.remove()
+			else:
+				ax2.remove()
+				ax3.remove()
+		# Ref
+		elif IS[1]['Description'] == 'IS only present in ref Strain.':
+			ID1 = IS[1]['REF.ID1']
+			start1 = int(IS[1]['REF.Start1'] - 3000)
+			# end1 = IS[1]['End1']
+			# start2 = IS[1]['Start2']
+			end2 = int(IS[1]['REF.End2'] + 3000)
+			ISstart = int(IS[1]['ISstart'])
+			ISend = int(IS[1]['ISend'])
+			name = IS[1]['REF.ID1'] + " - " + IS[1]['ISID'] +" Start: " + str(ISstart) + " End: " + str(ISend)
+			#
+			record = refRecords[ID1]
+			recordLength = len(record)
+			if start1 < 1:
+				start1 = 1
+			if end2 > recordLength:
+				end2 = recordLength
+			record = record.upper()
+			record = add_new_feature(record,ISstart,ISend,"DetectedIS",IS[1]['ISID'])
+			record = add_new_feature(record,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"QIF","Flank 1")
+			record = add_new_feature(record,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"QIF2","Flank 2")
+			graphic_record = MyCustomTranslator().translate_record(record)
+			graphic_record.ticks_resolution = 2000
+			croped_graphic_record = graphic_record.crop((start1, end2))
+			ax1 = axes[i][0]
+			ax2 = axes[i][1]
+			ax3 = axes[i][2]
+			ax, _ = croped_graphic_record.plot(ax=ax1, figure_width=7, strand_in_label_threshold=7)
+			ax1.set_title(name,loc='left',y=-0.2)
+			#Ref plots REF1/REF2
+			Rstart1 = IS[1]['Start1']
+			if 	Rstart1 == Rstart1:
+				REFID1 = IS[1]['Query.ID1']
+				REFID2 = IS[1]['Query.ID2']
+				Rstart1 = int(IS[1]['Start1'])
+				Rend1 = IS[1]['End1']
+				Rstart2 = IS[1]['Start2']
+				Rend2 = IS[1]['End2']
+				if Rstart2 == Rstart2:
+					Rend1 = int(IS[1]['End1'])
+					Rstart2 = int(IS[1]['Start2'])
+					Rend2 = int(IS[1]['End2'])
+					record1 = queryRecords[REFID1]
+					recordLength1 = len(record1)
+					#REF.ID2 != nan
+					if REFID2 == REFID2:
 						if Rstart1 - 3000 < 1:
 							Rstart1 = 1
 						else:
@@ -1726,87 +1813,62 @@ def plot_funcs(FinalResults, max_row):
 							Rend1 = recordLength1
 						else:
 							Rend1 = Rend1 + 3000
-						# Here only 1 plot
-						record1 = record1.upper()
-						record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"RA3","Match")
-						graphic_record = MyCustomTranslator().translate_record(record1)
-						graphic_record.ticks_resolution = 2000
-						croped_graphic_record = graphic_record.crop((Rstart1, Rend1))
-						ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
-						name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
-						ax2.set_title(name,loc='left',y=-0.2)
-						ax3.remove()
-					elif Rend2 == Rend2 :
-						Rend2 = int(IS[1]['REF.End2'])
-						record1 = refRecords[REFID1]
-						recordLength1 = len(record1)
-						if Rstart1 - 3000 < 1:
-							Rstart1 = 1
+						record2 = queryRecords[REFID2]
+						recordLength2 = len(record2)
+						if Rstart2 - 3000 < 1:
+							Rstart2 = 1
 						else:
-							Rstart1 = Rstart1 - 3000
-						if Rend2 + 3000 > recordLength1:
-							Rend2 = recordLength1
+							Rstart2 = Rstart2 - 3000
+						if Rend2 + 3000 > recordLength2:
+							Rend2 = recordLength2
 						else:
 							Rend2 = Rend2 + 3000
-						# Here only 1 plot
+						#here two plots
 						record1 = record1.upper()
-						record1 = add_new_feature(record1,int(IS[1]['REF.Start1']),int(IS[1]['REF.End2']),"RA3","Match 1-2")
-						graphic_record = MyCustomTranslator().translate_record(record1)
-						graphic_record.ticks_resolution = 2000
-						croped_graphic_record = graphic_record.crop((Rstart1, Rend2))
-						ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
-						name = IS[1]['REF.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend2)
+						record2 = record2.upper()
+						record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End1']),"RA","Match 1")
+						record2 = add_new_feature(record2,int(IS[1]['Start2']),int(IS[1]['End2']),"RA2","Match 2")
+						graphic_record1 = MyCustomTranslator().translate_record(record1)
+						graphic_record1.ticks_resolution = 2000
+						croped_graphic_record1 = graphic_record1.crop((Rstart1, Rend1))
+						ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+						name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
 						ax2.set_title(name,loc='left',y=-0.2)
-						ax3.remove()
-				else:
-					ax2.remove()
-					ax3.remove()
-			# Ref
-			elif IS[1]['Description'] == 'IS only present in ref Strain.':
-				ID1 = IS[1]['REF.ID1']
-				start1 = int(IS[1]['REF.Start1'] - 3000)
-				# end1 = IS[1]['End1']
-				# start2 = IS[1]['Start2']
-				end2 = int(IS[1]['REF.End2'] + 3000)
-				ISstart = int(IS[1]['ISstart'])
-				ISend = int(IS[1]['ISend'])
-				name = IS[1]['REF.ID1'] + " - " + IS[1]['ISID'] +" Start: " + str(ISstart) + " End: " + str(ISend)
-				#
-				record = refRecords[ID1]
-				recordLength = len(record)
-				if start1 < 1:
-					start1 = 1
-				if end2 > recordLength:
-					end2 = recordLength
-				record = record.upper()
-				record = add_new_feature(record,ISstart,ISend,"DetectedIS",IS[1]['ISID'])
-				record = add_new_feature(record,int(IS[1]['REF.Start1']),int(IS[1]['REF.End1']),"QIF","Flank 1")
-				record = add_new_feature(record,int(IS[1]['REF.Start2']),int(IS[1]['REF.End2']),"QIF2","Flank 2")
-				graphic_record = MyCustomTranslator().translate_record(record)
-				graphic_record.ticks_resolution = 2000
-				croped_graphic_record = graphic_record.crop((start1, end2))
-				ax1 = axes[i][0]
-				ax2 = axes[i][1]
-				ax3 = axes[i][2]
-				ax, _ = croped_graphic_record.plot(ax=ax1, figure_width=7, strand_in_label_threshold=7)
-				ax1.set_title(name,loc='left',y=-0.2)
-				#Ref plots REF1/REF2
-				Rstart1 = IS[1]['Start1']
-				if 	Rstart1 == Rstart1:
-					REFID1 = IS[1]['Query.ID1']
-					REFID2 = IS[1]['Query.ID2']
-					Rstart1 = int(IS[1]['Start1'])
-					Rend1 = IS[1]['End1']
-					Rstart2 = IS[1]['Start2']
-					Rend2 = IS[1]['End2']
-					if Rstart2 == Rstart2:
-						Rend1 = int(IS[1]['End1'])
-						Rstart2 = int(IS[1]['Start2'])
-						Rend2 = int(IS[1]['End2'])
-						record1 = queryRecords[REFID1]
-						recordLength1 = len(record1)
-						#REF.ID2 != nan
-						if REFID2 == REFID2:
+						graphic_record2 = MyCustomTranslator().translate_record(record2)
+						graphic_record2.ticks_resolution = 2000
+						croped_graphic_record2 = graphic_record2.crop((Rstart2, Rend2))
+						ax, _ = croped_graphic_record2.plot(ax=ax3, figure_width=7, strand_in_label_threshold=7)
+						name = IS[1]['Query.ID2'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
+						ax3.set_title(name,loc='left',y=-0.2)
+					else:
+						if (abs(Rstart1 - Rstart2) < 10000) or (abs(Rstart1 - Rstart2) < 3*shift):
+							# here 1 plot instead of 2
+							if Rstart1 > Rstart2:
+								Rstart = Rstart2
+								Rend = Rend1
+							else:
+								Rstart = Rstart1
+								Rend = Rend2
+							if Rstart - 3000 < 1:
+								Rstart = 1
+							else:
+								Rstart = Rstart - 3000
+							if Rend + 3000 > recordLength1:
+								Rend = recordLength1
+							else:
+								Rend = Rend + 3000
+							record1 = record1.upper()
+							record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End1']),"RA","Match 1")
+							record1 = add_new_feature(record1,int(IS[1]['Start2']),int(IS[1]['End2']),"RA2","Match 2")
+							graphic_record1 = MyCustomTranslator().translate_record(record1)
+							graphic_record1.ticks_resolution = 2000
+							croped_graphic_record1 = graphic_record1.crop((Rstart, Rend))
+							ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+							name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
+							ax2.set_title(name,loc='left',y=-0.2)
+							ax3.remove()
+						else:
+							#here two plots
 							if Rstart1 - 3000 < 1:
 								Rstart1 = 1
 							else:
@@ -1815,142 +1877,77 @@ def plot_funcs(FinalResults, max_row):
 								Rend1 = recordLength1
 							else:
 								Rend1 = Rend1 + 3000
-							record2 = queryRecords[REFID2]
-							recordLength2 = len(record2)
 							if Rstart2 - 3000 < 1:
 								Rstart2 = 1
 							else:
 								Rstart2 = Rstart2 - 3000
-							if Rend2 + 3000 > recordLength2:
-								Rend2 = recordLength2
+							if Rend2 + 3000 > recordLength1:
+								Rend2 = recordLength1
 							else:
 								Rend2 = Rend2 + 3000
-							#here two plots
 							record1 = record1.upper()
-							record2 = record2.upper()
 							record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End1']),"RA","Match 1")
-							record2 = add_new_feature(record2,int(IS[1]['Start2']),int(IS[1]['End2']),"RA2","Match 2")
+							record1 = add_new_feature(record1,int(IS[1]['Start2']),int(IS[1]['End2']),"RA2","Match 2")
 							graphic_record1 = MyCustomTranslator().translate_record(record1)
 							graphic_record1.ticks_resolution = 2000
 							croped_graphic_record1 = graphic_record1.crop((Rstart1, Rend1))
-							ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+							ax, _ = croped_graphic_record1.plot(ax=ax2,figure_width=7, strand_in_label_threshold=7)
 							name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
 							ax2.set_title(name,loc='left',y=-0.2)
-							graphic_record2 = MyCustomTranslator().translate_record(record2)
-							graphic_record2.ticks_resolution = 2000
-							croped_graphic_record2 = graphic_record2.crop((Rstart2, Rend2))
-							ax, _ = croped_graphic_record2.plot(ax=ax3, figure_width=7, strand_in_label_threshold=7)
-							name = IS[1]['Query.ID2'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
+							croped_graphic_record2 = graphic_record1.crop((Rstart2, Rend2))
+							ax, _ = croped_graphic_record2.plot(ax=ax3,figure_width=7, strand_in_label_threshold=7)
+							name = IS[1]['Query.ID1'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
 							ax3.set_title(name,loc='left',y=-0.2)
-						else:
-							if (abs(Rstart1 - Rstart2) < 10000) or (abs(Rstart1 - Rstart2) < 3*shift):
-								# here 1 plot instead of 2
-								if Rstart1 > Rstart2:
-									Rstart = Rstart2
-									Rend = Rend1
-								else:
-									Rstart = Rstart1
-									Rend = Rend2
-								if Rstart - 3000 < 1:
-									Rstart = 1
-								else:
-									Rstart = Rstart - 3000
-								if Rend + 3000 > recordLength1:
-									Rend = recordLength1
-								else:
-									Rend = Rend + 3000
-								record1 = record1.upper()
-								record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End1']),"RA","Match 1")
-								record1 = add_new_feature(record1,int(IS[1]['Start2']),int(IS[1]['End2']),"RA2","Match 2")
-								graphic_record1 = MyCustomTranslator().translate_record(record1)
-								graphic_record1.ticks_resolution = 2000
-								croped_graphic_record1 = graphic_record1.crop((Rstart, Rend))
-								ax, _ = croped_graphic_record1.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
-								name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
-								ax2.set_title(name,loc='left',y=-0.2)
-								ax3.remove()
-							else:
-								#here two plots
-								if Rstart1 - 3000 < 1:
-									Rstart1 = 1
-								else:
-									Rstart1 = Rstart1 - 3000
-								if Rend1 + 3000 > recordLength1:
-									Rend1 = recordLength1
-								else:
-									Rend1 = Rend1 + 3000
-								if Rstart2 - 3000 < 1:
-									Rstart2 = 1
-								else:
-									Rstart2 = Rstart2 - 3000
-								if Rend2 + 3000 > recordLength1:
-									Rend2 = recordLength1
-								else:
-									Rend2 = Rend2 + 3000
-								record1 = record1.upper()
-								record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End1']),"RA","Match 1")
-								record1 = add_new_feature(record1,int(IS[1]['Start2']),int(IS[1]['End2']),"RA2","Match 2")
-								graphic_record1 = MyCustomTranslator().translate_record(record1)
-								graphic_record1.ticks_resolution = 2000
-								croped_graphic_record1 = graphic_record1.crop((Rstart1, Rend1))
-								ax, _ = croped_graphic_record1.plot(ax=ax2,figure_width=7, strand_in_label_threshold=7)
-								name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
-								ax2.set_title(name,loc='left',y=-0.2)
-								croped_graphic_record2 = graphic_record1.crop((Rstart2, Rend2))
-								ax, _ = croped_graphic_record2.plot(ax=ax3,figure_width=7, strand_in_label_threshold=7)
-								name = IS[1]['Query.ID1'] + " Start: " + str(Rstart2) + " End: " + str(Rend2)
-								ax3.set_title(name,loc='left',y=-0.2)
-					elif Rend1 == Rend1:
-						Rend1 = int(IS[1]['End1'])
-						record1 = queryRecords[REFID1]
-						recordLength1 = len(record1)
-						if Rstart1 - 3000 < 1:
-							Rstart1 = 1
-						else:
-							Rstart1 = Rstart1 - 3000
-						if Rend1 + 3000 > recordLength1:
-							Rend1 = recordLength1
-						else:
-							Rend1 = Rend1 + 3000
-						# Here only 1 plot
-						record1 = record1.upper()
-						record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End1']),"RA3","Match")
-						graphic_record = MyCustomTranslator().translate_record(record1)
-						graphic_record.ticks_resolution = 2000
-						croped_graphic_record = graphic_record.crop((Rstart1, Rend1))
-						ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
-						name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
-						ax2.set_title(name,loc='left',y=-0.2)
-						ax3.remove()
-					elif Rend2 == Rend2 :
-						Rend2 = int(IS[1]['End2'])
-						record1 = queryRecords[REFID1]
-						recordLength1 = len(record1)
-						if Rstart1 - 3000 < 1:
-							Rstart1 = 1
-						else:
-							Rstart1 = Rstart1 - 3000
-						if Rend2 + 3000 > recordLength1:
-							Rend2 = recordLength1
-						else:
-							Rend2 = Rend2 + 3000
-						# Here only 1 plot
-						record1 = record1.upper()
-						record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End2']),"RA3","Match 1-2")
-						graphic_record = MyCustomTranslator().translate_record(record1)
-						graphic_record.ticks_resolution = 2000
-						croped_graphic_record = graphic_record.crop((Rstart1, Rend2))
-						ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
-						name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend2)
-						ax2.set_title(name,loc='left',y=-0.2)
-						ax3.remove()
-				else:
-					ax2.remove()
+				elif Rend1 == Rend1:
+					Rend1 = int(IS[1]['End1'])
+					record1 = queryRecords[REFID1]
+					recordLength1 = len(record1)
+					if Rstart1 - 3000 < 1:
+						Rstart1 = 1
+					else:
+						Rstart1 = Rstart1 - 3000
+					if Rend1 + 3000 > recordLength1:
+						Rend1 = recordLength1
+					else:
+						Rend1 = Rend1 + 3000
+					# Here only 1 plot
+					record1 = record1.upper()
+					record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End1']),"RA3","Match")
+					graphic_record = MyCustomTranslator().translate_record(record1)
+					graphic_record.ticks_resolution = 2000
+					croped_graphic_record = graphic_record.crop((Rstart1, Rend1))
+					ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+					name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend1)
+					ax2.set_title(name,loc='left',y=-0.2)
 					ax3.remove()
-			i+=1
-		fig.tight_layout(pad=7.5)#pad=0.5
-		figs.append(fig)
-		page+=1
+				elif Rend2 == Rend2 :
+					Rend2 = int(IS[1]['End2'])
+					record1 = queryRecords[REFID1]
+					recordLength1 = len(record1)
+					if Rstart1 - 3000 < 1:
+						Rstart1 = 1
+					else:
+						Rstart1 = Rstart1 - 3000
+					if Rend2 + 3000 > recordLength1:
+						Rend2 = recordLength1
+					else:
+						Rend2 = Rend2 + 3000
+					# Here only 1 plot
+					record1 = record1.upper()
+					record1 = add_new_feature(record1,int(IS[1]['Start1']),int(IS[1]['End2']),"RA3","Match 1-2")
+					graphic_record = MyCustomTranslator().translate_record(record1)
+					graphic_record.ticks_resolution = 2000
+					croped_graphic_record = graphic_record.crop((Rstart1, Rend2))
+					ax, _ = croped_graphic_record.plot(ax=ax2, figure_width=7, strand_in_label_threshold=7)
+					name = IS[1]['Query.ID1'] + " Start: " + str(Rstart1) + " End: " + str(Rend2)
+					ax2.set_title(name,loc='left',y=-0.2)
+					ax3.remove()
+			else:
+				ax2.remove()
+				ax3.remove()
+		i+=1
+	fig.tight_layout(pad=7.5)#pad=0.5
+	figs.append(fig)
 	return figs
 
 def checkFiles(filePath):
@@ -2366,19 +2363,22 @@ if __name__ == "__main__":
 		log.flush()
 		#
 		plotsPerPage=8
-		figs = plot_funcs(FinalResults, plotsPerPage)
+		page = 1
 		with PdfPages("./"+outputDir+'/ISGraphicReport.pdf') as pdf:
-			for fig in figs:
-				plt.figure(fig.number)
-				pdf.savefig()
-			d = pdf.infodict()
-			d['Title'] = 'Differential IS insertions graphic report'
-			d['Author'] = 'Mauricio J. Lozano | https://github.com/maurijlozano'
-			d['Subject'] = 'Graphical comparison of the genomic surroundings of the reported Insertion Sequences.'
-			d['Keywords'] = 'Is ISCompare genome'
-			d['Creator'] = 'ISCompare'+VERSION
-		#
-		plt.close('all')
+			for ISs in niter(FinalResults, plotsPerPage):
+				figs = plot_funcs(ISs, plotsPerPage,page)
+				for fig in figs:
+					plt.figure(fig.number)
+					pdf.savefig()
+				d = pdf.infodict()
+				d['Title'] = 'Differential IS insertions graphic report'
+				d['Author'] = 'Mauricio J. Lozano | https://github.com/maurijlozano'
+				d['Subject'] = 'Graphical comparison of the genomic surroundings of the reported Insertion Sequences.'
+				d['Keywords'] = 'Is ISCompare genome'
+				d['Creator'] = 'ISCompare'+VERSION
+				#
+				plt.close('all')
+				page += 1
 	#Clean if required
 	if args.clean:
 		trashFiles=["./" + outputDir + "/ref_query_testIS.txt" , "./" + outputDir+"/ref_queryISSurroundsFromref.fasta", "./" + outputDir+"/ref_surroundingBlastRes_R.txt", "./" + outputDir + "/ref_surroundingBlastRes_L.txt", "./" + outputDir + "/ref_surroundingBlastRes.txt", "./" + outputDir + "/ref_surroundings_R.fasta", "./" + outputDir + "/ref_surroundings_L.fasta", "./" + outputDir+"/ref_surroundings.fasta", "./" + outputDir+"/ref_ref_testIS.txt", "./" + outputDir+"/refIS.txt", "./" + outputDir+"/ref_reduced.fasta", "./" + outputDir+"/ref.fasta", "./" + outputDir+"/shiftedqueryEnd.fasta", "./" + outputDir+"/refGenome2queryGenome.res", "./" + outputDir+"/query_ref_testIS.txt", "./" + outputDir+"/query_surroundingBlastRes_R.txt", "./" + outputDir+"/query_surroundingBlastRes_L.txt", "./" + outputDir+"/query_surroundingBlastRes.txt", "./" + outputDir+"/query_refISSurroundsFromquery.fasta", "./" + outputDir+"/query_query_testIS.txt", "./" + outputDir+"/query_surroundings_R.fasta", "./" + outputDir+"/query_surroundings_L.fasta", "./" + outputDir+"/query_surroundings.fasta", "./" + outputDir+"/query_reduced.fasta", "./" + outputDir+"/queryIS.txt", "./" + outputDir+"/query.fasta", "./" + outputDir+"/shiftedrefEnd.fasta", "./" + outputDir + "/queryGenome2refGenome.res", "./" + outputDir + "/ref.gb", "./" + outputDir + "/query.gb"]
