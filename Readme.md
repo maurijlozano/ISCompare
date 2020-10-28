@@ -8,11 +8,11 @@ ISCompare is implemented on python and has the following aditional requirements:
 
 ##### Third party python modules:
 
-* [Biopython](https://biopython.org/) (Tested with Biopython v1.78)
+* [Biopython](https://biopython.org/) (Tested with Biopython > v1.76)
 * [DNA_features_viewer](https://github.com/Edinburgh-Genome-Foundry/DnaFeaturesViewer) (Tested with v3.0.3)
 * [Pandas](https://pandas.pydata.org/) (Tested with version > v1.0.3)
 * [Numpy](https://numpy.org/) (Tested with version > v1.18.4)
-* [mechanize](https://mechanize.readthedocs.io/en/latest/) (Tested with v0.4.5)
+* [mechanize](https://mechanize.readthedocs.io/en/latest/) (Tested with version > v0.4.5)
 
 [Blastn](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
   
@@ -23,7 +23,8 @@ For blast to run correctly some environment variables need to be created:
  * A new **BLASTDB** environment variable as pointer to database location, with "e.g. blast_install_dir\db\" as its value
  * A new **BLASTDB_LMDB_MAP_SIZE**, with **1000000** as its value (needed to optimize *makeblastdb* operation when creating new database files)
 
-Biopython: If you install biopython with pipwin, the error *'Bio module not found could '* could appear. In that case, go to you python install folder, \Lib\site-packages and verify that Biopython module folder is 'Bio' and not 'bio'.
+**Biopython:** If you install biopython with pipwin, the error *'Bio module not found could '* could appear. In that case, go to you python install folder, \Lib\site-packages and verify that Biopython module folder is 'Bio' and not 'bio'.
+  
 To install ISCompare simply download ISCompare folder and install all the required third party modules and programs.
 
 ### Algorithm overview
