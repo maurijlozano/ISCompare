@@ -22,7 +22,7 @@ For blast to run correctly some environment variables need to be created:
  * A new **BLASTDB** environment variable as pointer to database location, with "e.g. blast_install_dir\db\" as its value
  * A new **BLASTDB_LMDB_MAP_SIZE**, with **1000000** as its value (needed to optimize *makeblastdb* operation when creating new database files)
 
-If a low memory error is reported, while running ISCompare with the -p option, python 64bit should be installed.  
+If a low memory error is reported while running ISCompare with the -p option, then python 64bit should be installed.  
   
 **Biopython:** If you install biopython with pipwin, the error *'Bio module not found could '* could appear. In that case, go to you python install folder, \Lib\site-packages and verify that Biopython module folder is 'Bio' and not 'bio'.
   
