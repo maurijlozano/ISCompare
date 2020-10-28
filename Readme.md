@@ -17,12 +17,13 @@ ISCompare is implemented on python and has the following aditional requirements:
 [Blastn](https://blast.ncbi.nlm.nih.gov/Blast.cgi?PAGE_TYPE=BlastDocs&DOC_TYPE=Download)
   
 ##### For windows users:
-For ISCompare to run with the -p option python 64bit should be installed.  
 For blast to run correctly some environment variables need to be created:
  * A modified **path** environment variable to indicate the location of installed blast+ programs
  * A new **BLASTDB** environment variable as pointer to database location, with "e.g. blast_install_dir\db\" as its value
  * A new **BLASTDB_LMDB_MAP_SIZE**, with **1000000** as its value (needed to optimize *makeblastdb* operation when creating new database files)
 
+If a low memory error is reported, while running ISCompare with the -p option, python 64bit should be installed.  
+  
 **Biopython:** If you install biopython with pipwin, the error *'Bio module not found could '* could appear. In that case, go to you python install folder, \Lib\site-packages and verify that Biopython module folder is 'Bio' and not 'bio'.
   
 To install ISCompare simply download ISCompare folder and install all the required third party modules and programs.
