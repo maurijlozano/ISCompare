@@ -24,7 +24,7 @@ For blast to run correctly some environment variables need to be created:
 
 If a low memory error is reported while running ISCompare with the -p option, then python 64bit should be installed.  
   
-**Biopython:** If you install biopython with pipwin, the error *'Bio module not found could '* could appear. In that case, go to you python install folder, \Lib\site-packages and verify that Biopython module folder is 'Bio' and not 'bio'.
+**Biopython:** If you install biopython with pipwin, the error *'Bio module not found'* could appear. In that case, go to you python install folder, \Lib\site-packages and verify that Biopython module folder is 'Bio' and not 'bio'.
   
 To install ISCompare simply download ISCompare folder and install all the required third party modules and programs.
 
