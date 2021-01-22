@@ -149,6 +149,7 @@ IS.fasta must contain only one IS sequence in fasta format.
 
 * extractISbyName.py: This script can be used to extract a single IS from the IS database (multifasta file, IS.fna) by its name.  Type ```./extractISbyName.py -h``` for usage information.
 * extractRefFeatures.py: This script can be used to extract all CDS features from a genbank file. Such file is required to run ISSeeker. Type ```./extractRefFeatures.py -h``` for usage information.
+* EMBL2GB.py: Converts EMBL genome files to genbank format. Type ```./EMBL2GB.py -h``` for usage information.
 
 
 
