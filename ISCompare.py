@@ -2294,7 +2294,7 @@ if __name__ == "__main__":
 	FinalResults = annotateTable(results)
 	#
 	#save tables..
-	FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']] = FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']].astype("Float32")
+	FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']] = FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']].astype("float32")
 	FinalResults = FinalResults.sort_values(['Observations','Query.ID1','ISstart'])
 	FinalResults = FinalResults.drop_duplicates(["Query.ID1","ISstart","Start1"])
 	FinalResults = FinalResults.reset_index(drop=True)
