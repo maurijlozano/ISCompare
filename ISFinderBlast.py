@@ -85,11 +85,11 @@ def getISsequencesFromISFinderDB(ISFILE,blastResTab):
 		ISpage = br.response().read()
 		ISpage = lxml.html.fromstring(ISpage)
 		DNA_seq = ISpage.xpath('//div[@class="seq"]')[0].text_content()
-		if ISgroup != ISgroup or ISgroup is None:
+		if ISgroup == None:
 			ISgroup = ""
 		else:
 			ISgroup = "_"+ISgroup
-		if ISfamily != ISfamily or ISfamily is None:
+		if ISfamily == None:
 			ISfamily = ""
 		else:
 			ISfamily = "_"+ISfamily

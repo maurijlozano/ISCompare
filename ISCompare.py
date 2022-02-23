@@ -4,7 +4,7 @@ ISCompare is a program designed to look for and compare insertion sequence posit
 Written by Mauricio J. Lozano
 UNLP - CONICET - Instituto de Biotecnología y Biología Molecular (IBBM)
 '''
-VERSION="1.0.2"
+VERSION="1.0.3"
 REF="\n\n   Easy identification of insertion sequence mobilization events\n   in related bacterial strains with ISCompare. \n   E.G. Mogro, N. Ambrosis, M.J. Lozano\n   doi: https://doi.org/10.1101/2020.10.16.342287\n   Instituto de Biotecnología y Biología Molecular\n   CONICET - CCT La Plata - UNLP - FCE\n"
 GITHUB="https://github.com/maurijlozano/ISCompare"
 
@@ -243,8 +243,8 @@ def findpairs(keep):
 							rightstart = float(entry['sstart'])
 							rightend = float(entry['send'])
 							if  ((rightstart < leftend + ISMatchLen + 100 and rightstart > leftend - surroundingLen/2) or (rightend > leftstart - ISMatchLen - 100 and rightend < leftstart + surroundingLen/2)) and entry['sseqid'] == left.iloc[0,1]:
-								modedBlastResTab = modedBlastResTab.append(left)
-								modedBlastResTab = modedBlastResTab.append(entry)
+								modedBlastResTab = concatPdTables(modedBlastResTab,left)
+								modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 								notAsigned=False
 								break
 						if notAsigned:
@@ -252,8 +252,8 @@ def findpairs(keep):
 								rightstart = float(entry['sstart'])
 								rightend = float(entry['send'])
 								if  ((rightstart < leftend + ISMatchLen + 10000 and rightstart > leftend) or (rightend > leftstart - ISMatchLen - 10000 and rightend < leftstart)) and entry['sseqid'] == left.iloc[0,1]:
-									modedBlastResTab = modedBlastResTab.append(left)
-									modedBlastResTab = modedBlastResTab.append(entry)
+									modedBlastResTab = concatPdTables(modedBlastResTab,left)
+									modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 									notAsigned=False
 									break
 						if notAsigned:
@@ -262,8 +262,8 @@ def findpairs(keep):
 								rightend = float(entry['send'])
 								contigLen = entry['slen']
 								if (entry['length'] > Rlen*.9) and ( rightstart < 1000  or rightend > contigLen - 1000 ):
-									modedBlastResTab = modedBlastResTab.append(left)
-									modedBlastResTab = modedBlastResTab.append(entry)
+									modedBlastResTab = concatPdTables(modedBlastResTab,left)
+									modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 									notAsigned=False
 									break
 					elif len(right) == 1:
@@ -275,8 +275,8 @@ def findpairs(keep):
 							leftend = float(entry['send'])
 							leftstart = float(entry['sstart'])
 							if ((leftend > rightstart - ISMatchLen - 100 and leftend < rightstart + surroundingLen/2) or (leftstart < rightend + ISMatchLen + 100 and leftstart > rightend - surroundingLen/2) ) and entry['sseqid'] == right.iloc[0,1]:
-								modedBlastResTab = modedBlastResTab.append(right)
-								modedBlastResTab = modedBlastResTab.append(entry)
+								modedBlastResTab = concatPdTables(modedBlastResTab,right)
+								modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 								notAsigned=False
 								break
 						if notAsigned:
@@ -284,8 +284,8 @@ def findpairs(keep):
 								leftend = float(entry['send'])
 								leftstart = float(entry['sstart'])
 								if ((leftend > rightstart - ISMatchLen - 10000 and leftend < rightstart) or (leftstart < rightend + ISMatchLen + 10000 and leftstart > rightend)) and entry['sseqid'] == right.iloc[0,1]:
-									modedBlastResTab = modedBlastResTab.append(right)
-									modedBlastResTab = modedBlastResTab.append(entry)
+									modedBlastResTab = concatPdTables(modedBlastResTab,right)
+									modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 									notAsigned=False
 									break
 						if notAsigned:
@@ -294,8 +294,8 @@ def findpairs(keep):
 								leftstart = float(entry['sstart'])
 								contigLen = entry['slen']
 								if (entry['length'] > Llen*.9) and ( leftstart < 1000  or leftend > contigLen - 1000 ):
-									modedBlastResTab = modedBlastResTab.append(right)
-									modedBlastResTab = modedBlastResTab.append(entry)
+									modedBlastResTab = concatPdTables(modedBlastResTab,right)
+									modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 									notAsigned=False
 									break
 					elif (len(left) > 1) and (len(right) > 1):
@@ -311,8 +311,8 @@ def findpairs(keep):
 								rightstart = float(entry['sstart'])
 								rightend = float(entry['send'])
 								if  ((rightstart < leftend + ISMatchLen + 100 and rightstart > leftend - surroundingLen/2) or (rightend > leftstart - ISMatchLen - 100 and rightend < leftstart + 50)) and entry['sseqid'] == left.iloc[0,1]:
-									modedBlastResTab = modedBlastResTab.append(entryL)
-									modedBlastResTab = modedBlastResTab.append(entry)
+									modedBlastResTab = concatPdTables(modedBlastResTab,entryL)
+									modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 									notAsigned=False
 									break
 							if notAsigned:
@@ -320,8 +320,8 @@ def findpairs(keep):
 									rightstart = float(entry['sstart'])
 									rightend = float(entry['send'])
 									if  ((rightstart < leftend + ISMatchLen + 10000 and rightstart > leftend) or (rightend > leftstart - ISMatchLen - 10000 and rightend < leftstart)) and entry['sseqid'] == left.iloc[0,1]:
-										modedBlastResTab = modedBlastResTab.append(entryL)
-										modedBlastResTab = modedBlastResTab.append(entry)
+										modedBlastResTab = concatPdTables(modedBlastResTab,entryL)
+										modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 										notAsigned=False
 										break
 							if notAsigned:
@@ -330,8 +330,8 @@ def findpairs(keep):
 									rightend = float(entry['send'])
 									contigLen = entry['slen']
 									if (entry['length'] > Rlen*.9) and ( rightstart < 1000  or rightend > contigLen - 1000 ):
-										modedBlastResTab = modedBlastResTab.append(entryL)
-										modedBlastResTab = modedBlastResTab.append(entry)
+										modedBlastResTab = concatPdTables(modedBlastResTab,entryL)
+										modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 										notAsigned=False
 										break
 						if notAsigned:
@@ -344,8 +344,8 @@ def findpairs(keep):
 									leftend = float(entry['send'])
 									leftstart = float(entry['sstart'])
 									if ((leftend > rightstart - ISMatchLen - 100 and leftend < rightstart + surroundingLen/2) or (leftstart < rightend + ISMatchLen + 100 and leftstart > rightend - 50) ) and entry['sseqid'] == right.iloc[0,1]:
-										modedBlastResTab = modedBlastResTab.append(entryR)
-										modedBlastResTab = modedBlastResTab.append(entry)
+										modedBlastResTab = concatPdTables(modedBlastResTab,entryR)
+										modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 										notAsigned=False
 										break
 								if notAsigned:
@@ -353,8 +353,8 @@ def findpairs(keep):
 										leftend = float(entry['send'])
 										leftstart = float(entry['sstart'])
 										if ((leftend > rightstart - ISMatchLen - 10000 and leftend < rightstart) or (leftstart < rightend + ISMatchLen + 10000 and leftstart > rightend)) and entry['sseqid'] == right.iloc[0,1]:
-											modedBlastResTab = modedBlastResTab.append(entryR)
-											modedBlastResTab = modedBlastResTab.append(entry)
+											modedBlastResTab = concatPdTables(modedBlastResTab,entryR)
+											modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 											notAsigned=False
 											break
 								if notAsigned:
@@ -363,15 +363,15 @@ def findpairs(keep):
 										leftstart = float(entry['sstart'])
 										contigLen = entry['slen']
 										if (entry['length'] > Llen*.9) and ( leftstart < 1000  or leftend > contigLen - 1000 ):
-											modedBlastResTab = modedBlastResTab.append(entryR)
-											modedBlastResTab = modedBlastResTab.append(entry)
+											modedBlastResTab = concatPdTables(modedBlastResTab,entryR)
+											modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 											notAsigned=False
 											break
 				else:
 					newScaffoldEntries = newScaffoldEntries.sort_values(["evalue"])
 					if (newScaffoldEntries.iloc[0,4] > newScaffoldEntries.iloc[0,2]*.9) and (newScaffoldEntries.iloc[0,9] < newScaffoldEntries.iloc[1,9]):
 						entry = newScaffoldEntries.iloc[0,:]
-						modedBlastResTab = modedBlastResTab.append(entry)
+						modedBlastResTab = concatPdTables(modedBlastResTab,entry)
 			else:
 				ISMatchLen = int(re.sub(r'^.*\|ISMatchLen:([0-9]*)\*?\*?$','\\1',scaffoldEntries.iloc[0,0]))
 				Llen = scaffoldEntries["Llen"].iloc[0] #.iloc[0,17]
@@ -380,7 +380,7 @@ def findpairs(keep):
 				if Llen > minLength and Rlen > minLength:
 					pass
 				else:
-					modedBlastResTab = modedBlastResTab.append(scaffoldEntries)
+					modedBlastResTab = concatPdTables(modedBlastResTab,scaffoldEntries)
 			uniqueID+=1
 		if len(modedBlastResTab) == 0:
 			modedBlastResTab['uniqueID'] = np.nan
@@ -412,16 +412,16 @@ def getScaffoldsWithGoodQIFs(table):
 				right = newScaffoldEntries[newScaffoldEntries['Flank'] == 'R']
 				if (len(right) > 1) and (right.iloc[0,9] < right.iloc[1,9]):
 					entryR = right.iloc[0,:]
-					modedBlastResTab = modedBlastResTab.append(entryR)
+					modedBlastResTab = concatPdTables(modedBlastResTab,entryR)
 				else:
-					modedBlastResTab = modedBlastResTab.append(right)
+					modedBlastResTab = concatPdTables(modedBlastResTab,right)
 				if (len(left) > 1) and (left.iloc[0,9] < left.iloc[1,9]):
 					entryL = left.iloc[0,:]
-					modedBlastResTab = modedBlastResTab.append(entryL)
+					modedBlastResTab = concatPdTables(modedBlastResTab,entryL)
 				else:
-					modedBlastResTab = modedBlastResTab.append(left)
+					modedBlastResTab = concatPdTables(modedBlastResTab,left)
 			else:
-				modedBlastResTab = modedBlastResTab.append(scaffoldEntries)
+				modedBlastResTab = concatPdTables(modedBlastResTab,scaffoldEntries)
 	return modedBlastResTab
 
 def extractSeqFromGB(gbfileID,IStable,IStableName,surroundingLen, shift):
@@ -555,6 +555,13 @@ def extractSeqFromREFGB(gbfileID,IStable,IStableName,surroundingLen2, shift):
 	f.close()
 	pass
 
+def concatPdTables(tab1,tab2):
+	#Concat a row or a table to a dataframe
+	if isinstance(tab2, pd.DataFrame):
+		return(pd.concat([tab1,tab2]))
+	else:
+		return(pd.concat([tab1,pd.DataFrame(tab2).transpose()]))
+
 def filterLowLen(blastResTab,ISdiff):
 	#Filter low length IS blast matches from the analysis. Filters IS scaffolds. Adds information.
 	for idx, row in blastResTab.iterrows():
@@ -572,11 +579,11 @@ def filterLowLen(blastResTab,ISdiff):
 			pass
 		else:
 			if int(row["qstart"]) < 50:
-				blastResTabfilter = blastResTabfilter.append(row)
+				blastResTabfilter = concatPdTables(blastResTabfilter,row)
 			elif int(row["qend"]) > (row["qlen"] - 50):
-				blastResTabfilter = blastResTabfilter.append(row)
+				blastResTabfilter = concatPdTables(blastResTabfilter,row)
 			elif int(row["length"]) > row["slen"]*.3:
-				blastResTabfilter = blastResTabfilter.append(row)
+				blastResTabfilter = concatPdTables(blastResTabfilter,row)
 	return(blastResTabfilter)
 
 def identifyIdenticalScaffolds(rseq, qseq, maxLenScaffolds,	scaffoldDiff):
@@ -654,9 +661,9 @@ def modifyBlastResTab(blastResTab):
 				else:
 					newIndex = newIndex + 1
 					newEntry.loc[newIndex] = scaffoldEntries.iloc[ISindex,:]
-			modedBlastResTab = 	modedBlastResTab.append(newEntry)
+			modedBlastResTab = 	concatPdTables(modedBlastResTab,newEntry)
 		else:
-			modedBlastResTab = 	modedBlastResTab.append(scaffoldEntries)
+			modedBlastResTab = 	concatPdTables(modedBlastResTab,scaffoldEntries)
 	return(modedBlastResTab)
 
 def findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta):
@@ -800,7 +807,7 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 		blastResTab_R["Flank"] = "R"
 	else:
 		blastResTab_R["Flank"] = np.nan
-	blastResTab = blastResTab.append(blastResTab_R)
+	blastResTab = concatPdTables(blastResTab,blastResTab_R)
 	blastResTab = blastResTab.reset_index(drop=True)
 	#Process tables
 	blastResTab = blastResTab[~blastResTab['qseqid'].isin(MiddleMissingISID)]
@@ -843,7 +850,7 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	#
 	#Discard mathces on scaffold ends,
 	matchOnScaffoldEnd = keep[((keep['sstart'] < 25) & (keep['Extract'] == 'L'))]
-	matchOnScaffoldEnd = matchOnScaffoldEnd.append(keep[((keep['send'] > keep['slen'] - 25) & (keep['Extract'] == 'R'))])
+	matchOnScaffoldEnd = concatPdTables(matchOnScaffoldEnd,keep[((keep['send'] > keep['slen'] - 25) & (keep['Extract'] == 'R'))])
 	matchOnScaffoldEnd = list(matchOnScaffoldEnd['qseqid'].unique())
 	keepUL2 = list(keep['qseqid'].unique())
 	#
@@ -946,7 +953,7 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 		outermerge21.columns = columns
 		outermerge21 = outermerge21.iloc[:,0:14]
 		outermerge21['Observations'] = '3. Verify manually, Possible false positive produced by consecutive IS [2 RAFs found, only one with an IS].'
-		missingQueryIS2 = missingQueryIS2.append(outermerge21)
+		missingQueryIS2 = concatPdTables(missingQueryIS2,outermerge21)
 	else:
 		keepRepList = set()
 		missingQueryIS2 = pd.DataFrame(columns = ['qseqid', 'uniqueID', 'Scaffold_count', 'sseqid_first', 'sseqid_last', 'ISID', 'start', 'Lend', 'Rstart', 'end', 'sstart_first', 'sstart_last', 'send_first', 'send_last','Observations','IS_Match_Type','tag','Scaffold'])
@@ -997,8 +1004,8 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	multiplehits = pd.DataFrame(goodqc[~goodqc['qseqid'].isin(keepUL2)])
 	multiplehits['Observations'] = '6. Discarded for analysis. There were multiple blastn hits, and left and right pairs could not be determined.'
 	#append into a single table
-	missedScaffolds = notfound.append(lowqc)
-	missedScaffolds = missedScaffolds.append(multiplehits)
+	missedScaffolds = concatPdTables(notfound,lowqc)
+	missedScaffolds = concatPdTables(missedScaffolds,multiplehits)
 	#
 	#incorporate data from blastResTab
 	for idx,scaffold in blastResTab.iterrows():
@@ -1022,10 +1029,10 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 			missedScaffolds.loc[idx,'send_first'] = group[group['qseqid'] == row['qseqid']]['send_first'].iloc[0]
 			missedScaffolds.loc[idx,'send_last'] = group[group['qseqid'] == row['qseqid']]['send_last'].iloc[0]
 	missedScaffolds = missedScaffolds[['qseqid', 'uniqueID','Scaffold_count','sseqid_first','sseqid_last','ISID','start', 'end', 'Lend', 'Rstart','sstart_first','sstart_last', 'send_first', 'send_last', 'Observations']]
-	missingQueryIS2 = missingQueryIS2.append(missedScaffolds)
+	missingQueryIS2 = concatPdTables(missingQueryIS2,missedScaffolds)
 	#
 	if args.reportSLIS and len(SLIS) > 0:
-		missingQueryIS2 = missingQueryIS2.append(SLIS)
+		missingQueryIS2 = concatPdTables(missingQueryIS2,SLIS)
 	#format table
 	if len(missingQueryIS2) > 0:
 		missingQueryIS2["Scaffold"] = missingQueryIS2.apply(lambda x: re.sub(r'^([^|]*)\|.*','\\1',x["qseqid"]), axis=1)
@@ -2117,12 +2124,16 @@ if __name__ == "__main__":
 		isfile = "./"+outputDir+"/IS.fasta"
 		try:
 			IStable = ISFinderBlast.BlastISatISFinder(queryFileFasta)
-			IStable = IStable.append(ISFinderBlast.BlastISatISFinder(refFileFasta))
+			IStable = concatPdTables(IStable,ISFinderBlast.BlastISatISFinder(refFileFasta))
 			IStable = IStable.groupby('Sequences producing significant alignments',as_index=False).first()
+		except:
+			print('Something went wrong with the ISFinder blast service.\nTry to run the program with -i IS.fasta option.')
+			exit()
+		try:	
 			ISFinderBlast.getISsequencesFromISFinderDB(isfile,IStable)
 			print(str(len(IStable))+' IS sequences downloaded from ISFinder database.')
 		except:
-			print('Something went wrong with the ISFinder blast service.\nTry to run the program with -i IS.fasta option.')
+			print('Something went wrong while downloading the IS sequences.\nTry to run the program with -i IS.fasta option.')
 			exit()
 	else:
 		print('A fasta file with the IS sequences to look for must be provided, \nor you could run with -I option to search for ISs using ISFinder server.')
@@ -2177,7 +2188,7 @@ if __name__ == "__main__":
 	missingIS = testIS(rseq, qseq,MiddleMissingISID,consecutiveIS)
 	missingIS = missingIS[['qseqid','sseqid_first','sseqid_last', 'start', 'end', 'sstart_first','send_first','sstart_last','send_last', 'Scaffold', 'Observations', 'IS_Match_Type']]
 	#join tables
-	missingIS = missingIS.append(MiddleMissingIS)
+	missingIS = concatPdTables(missingIS,MiddleMissingIS)
 	missingIS["Description"] = "IS only present in " + qseq + " Strain."
 	if len(missingIS)>0:
 		missingIS["ISstart"] = missingIS.apply(lambda x: re.sub(r".*\|ISstart:([0-9]{1,10}).*$","\\1",x["qseqid"]), axis = 1)
@@ -2187,12 +2198,12 @@ if __name__ == "__main__":
 		missingIS["Lend"]  = missingIS.apply(lambda x: int(re.sub(r'^.*\|LEFT_End:([0-9]{1,10})\|.*$','\\1',x["qseqid"])),axis=1)
 		missingIS["Rstart"]  = missingIS.apply(lambda x: int(re.sub(r'^.*\|RIGHT_start:([0-9]{1,10})\|.*$','\\1',x["qseqid"])),axis=1)
 	else:
-		 missingIS["ISstart"] = np.nan
-		 missingIS["ISend"] = np.nan
-		 missingIS["ISID"]  = np.nan
-		 #
-		 missingIS["Lend"]  = np.nan
-		 missingIS["Rstart"]  = np.nan
+		missingIS["ISstart"] = np.nan
+		missingIS["ISend"] = np.nan
+		missingIS["ISID"]  = np.nan
+		#
+		missingIS["Lend"]  = np.nan
+		missingIS["Rstart"]  = np.nan
 	#
 	missingIS['Scaffold2'] = np.nan
 	results = missingIS[["ISID","ISstart","ISend","Scaffold","start","Lend","Scaffold2","Rstart","end","sseqid_first","sstart_first","send_first","sseqid_last","sstart_last","send_last","Description","Observations","IS_Match_Type"]]
@@ -2245,7 +2256,7 @@ if __name__ == "__main__":
 	missingIS = testIS(qseq,rseq,MiddleMissingISID,consecutiveIS)
 	missingIS = missingIS[['qseqid','sseqid_first','sseqid_last', 'start', 'end', 'sstart_first','send_first','sstart_last','send_last', 'Scaffold', 'Observations', 'IS_Match_Type']]
 	# Join tables
-	missingIS = missingIS.append(MiddleMissingIS)
+	missingIS = concatPdTables(missingIS,MiddleMissingIS)
 	missingIS["Description"] = "IS only present in " + rseq + " Strain."
 	if len(missingIS)>0:
 		missingIS["ISstart"] = missingIS.apply(lambda x: re.sub(r".*\|ISstart:([0-9]{1,10}).*$","\\1",x["qseqid"]), axis = 1)
@@ -2273,7 +2284,7 @@ if __name__ == "__main__":
 	log.write("Step5: Consolidating results and annotating data...")
 	log.flush()
 	#Now we have to join with the previous results!
-	results = results.append(results2)
+	results = concatPdTables(results,results2)
 	results = results.sort_values(['Query.ID1','Description','REF.Start1'])
 	if args.remove:
 		results = results[~results['Query.ID1'].isin(list(identicalScaffolds['qseqid']))]
@@ -2294,7 +2305,7 @@ if __name__ == "__main__":
 	FinalResults = annotateTable(results)
 	#
 	#save tables..
-	FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']] = FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']].astype("float32")
+	FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']] = FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']].astype("float")
 	FinalResults = FinalResults.sort_values(['Observations','Query.ID1','ISstart'])
 	FinalResults = FinalResults.drop_duplicates(["Query.ID1","ISstart","Start1"])
 	FinalResults = FinalResults.reset_index(drop=True)
@@ -2321,7 +2332,7 @@ if __name__ == "__main__":
 	totalqueryIS = totalqueryIS.reset_index(drop=True)
 	totalqueryIS.to_csv(outputDir+'/QueryISs.csv')
 	#New on RC5
-	ConsecutiveIS = ConsecutiveISQuery.append(ConsecutiveISRef)
+	ConsecutiveIS = concatPdTables(ConsecutiveISQuery,ConsecutiveISRef)
 	ConsecutiveIS = ConsecutiveIS.reset_index(drop=True)
 	ConsecutiveIS.to_csv(outputDir+'/ConsecutiveIS.csv')
 	#*****************************************************************************************
