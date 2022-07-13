@@ -2347,22 +2347,22 @@ if __name__ == "__main__":
 	f.write("Query - total Identified ISs: " + str(totalstatsQuery[5]))
 	if args.remove:
 		f.write("\nQuery - Scaffolds removed from the analysis [identical to reference genome]: " + str(len(identicalScaffolds)))
-		f.write("\nQuery - Scaffolds removed from the analysis [identical to reference genome]: " + ', '.join(identicalScaffolds['qseqid']))
+		f.write("\nQuery - Scaffolds removed from the analysis [identical to reference genome]: " + ', '.join([ str(q) for q in identicalScaffolds['qseqid']]))
 	f.write("\nQuery - total Identified ISs in non identical scaffolds: " + str(statsQuery[5]))
 	f.write("\nQuery - total processed ISs (ISs with alignment length > 100): " + str(statsQuery[0]))
 	f.write("\nQuery - Scaffolds with more than one ISs [Number]: " + str(statsQuery[1]))
-	f.write("\nQuery - Scaffolds with more than one ISs [Name]: " + ', '.join(statsQuery[2]))
+	f.write("\nQuery - Scaffolds with more than one ISs [Name]: " + ', '.join([str(q) for q in statsQuery[2]]))
 	f.write("\nQuery - Scaffolds with only one IS [Number]: " + str(statsQuery[3]))
-	f.write("\nQuery - Scaffolds with only one IS [Name]: " +', '.join(statsQuery[4]))
+	f.write("\nQuery - Scaffolds with only one IS [Name]: " + ', '.join([str(q) for q in statsQuery[4]]))
 	if args.remove:
 		f.write("\nReference - Scaffolds removed from the analysis [identical to query genome]: " + str(len(identicalScaffoldsRef)))
-		f.write("\nReference - Scaffolds removed from the analysis [identical to query genome]: " + ', '.join(identicalScaffoldsRef['qseqid']))
+		f.write("\nReference - Scaffolds removed from the analysis [identical to query genome]: " + ', '.join([str(q) for q in identicalScaffoldsRef['qseqid']]))
 	f.write("\nReference - total Identified ISs: " + str(totalstatsRef[5])) #totalrefIS, totalstatsRef
 	f.write("\nReference - total processed ISs (ISs with alignment length > 100): " + str(statsRef[0]))
 	f.write("\nReference - Scaffolds with more than one ISs [Number]: " + str(statsRef[1]))
-	f.write("\nReference - Scaffolds with more than one ISs [Name]: " + ', '.join(statsRef[2]))
+	f.write("\nReference - Scaffolds with more than one ISs [Name]: " + ', '.join([str(r) for r in statsRef[2]]))
 	f.write("\nReference - Scaffolds with only one IS [Number]: " + str(statsRef[3]))
-	f.write("\nReference - Scaffolds with only one IS [Name]: " + ', '.join(statsRef[4]))
+	f.write("\nReference - Scaffolds with only one IS [Name]: " + ', '.join([str(r) for r in statsRef[4]]))
 	f.close()
 	#******************************************************************************************
 	#******************************************************************************************
