@@ -4,7 +4,7 @@ ISCompare is a program designed to look for and compare insertion sequence posit
 Written by Mauricio J. Lozano
 UNLP - CONICET - Instituto de Biotecnología y Biología Molecular (IBBM)
 '''
-VERSION="1.0.3"
+VERSION="1.0.5"
 REF="\n\n   Easy identification of insertion sequence mobilization events\n   in related bacterial strains with ISCompare. \n   E.G. Mogro, N. Ambrosis, M.J. Lozano\n   doi: https://doi.org/10.1101/2020.10.16.342287\n   Instituto de Biotecnología y Biología Molecular\n   CONICET - CCT La Plata - UNLP - FCE\n"
 GITHUB="https://github.com/maurijlozano/ISCompare"
 
