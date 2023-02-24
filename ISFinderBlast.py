@@ -65,6 +65,9 @@ def BlastISatISFinder(genome):
 			loading=True
 	#
 	blastResTab = blastResTab[blastResTab['E. value'] < 0.0000000001 ]
+	columns = list(blastResTab.columns)
+	columns[0] = re.sub('  ',' ',columns[0])
+	blastResTab.columns = columns
 	br.close()
 	return blastResTab
 
