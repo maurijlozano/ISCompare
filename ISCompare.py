@@ -234,8 +234,8 @@ def findpairs(keep):
 					left = 	newScaffoldEntries[newScaffoldEntries['Flank'] == "L"]
 					right = newScaffoldEntries[newScaffoldEntries['Flank'] == "R"]
 					if len(left) == 1:
-						leftend = float(left['send'])
-						leftstart = float(left['sstart'])
+						leftend = float(left['send'].iloc[0])
+						leftstart = float(left['sstart'].iloc[0])
 						right = right.sort_values(["evalue"])
 						notAsigned=True
 						for idx,entry in right.iterrows():
@@ -266,8 +266,8 @@ def findpairs(keep):
 									notAsigned=False
 									break
 					elif len(right) == 1:
-						rightstart = float(right['sstart'])
-						rightend = float(right['send'])
+						rightstart = float(right['sstart'].iloc[0])
+						rightend = float(right['send'].iloc[0])
 						left = left.sort_values(["evalue"])
 						notAsigned=True
 						for idx,entry in left.iterrows():
