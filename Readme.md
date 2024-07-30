@@ -32,6 +32,11 @@ If a low memory error is reported while running ISCompare with the -p option, th
   
 To install ISCompare simply download ISCompare folder and install all the required third party modules and programs.
 
+### New testpypi package availabe
+`pip install -i https://test.pypi.org/simple/ ISCompare`
+To run this version use ISCompare instead of ISCompare.py. Also, for linux run install_requirements to test or install dependencies including blast.
+
+
 ### Algorithm overview
 ![alt text](https://github.com/maurijlozano/ISCompare/blob/master/overview.png "Algorithm overview")
 
