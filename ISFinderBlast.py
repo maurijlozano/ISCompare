@@ -14,9 +14,9 @@ import re
 import os
 
 
-
 def BlastISatISFinder(genome):
 	#Submit form using mechanize
+	print(f'Searching for ISs in {genome}...')
 	br = mechanize.Browser()
 	br.set_handle_robots(False)
 	br.addheaders = [('User-agent', 'Firefox')]
@@ -26,12 +26,14 @@ def BlastISatISFinder(genome):
 		print('SSL: CERTIFICATE_VERIFY_FAILED. Do you want to continue without SSL certificate verification?')
 		yesOrNo = input('Please input Y/N: ')
 		if yesOrNo.upper() == 'Y':
-			ssl._create_default_https_context = ssl._create_unverified_context
+			#ssl._create_default_https_context = ssl._create_unverified_context
+			br.set_ca_data(context=ssl._create_unverified_context())
 			br.open("https://www-is.biotoul.fr/blast.php")
 		else:
 			print('Please try using a custom IS database fasta file.')
 			exit()
 	#
+	print('Filling ISFinder Blast search forms...')
 	br.select_form(enctype="multipart/form-data")
 	filename = genome
 	records = SeqIO.parse(filename,'fasta')
@@ -47,6 +49,7 @@ def BlastISatISFinder(genome):
 	os.remove('temp.fasta')
 	resultsPage = submitToISfinder.geturl()
 	#read table with pandas
+	print("Waiting for ISFinder results...")
 	loading=True
 	while loading:
 		loading=False
@@ -72,6 +75,7 @@ def BlastISatISFinder(genome):
 	return blastResTab
 
 def getISsequencesFromISFinderDB(ISFILE,blastResTab):
+	print('Downloading IS sequences...')
 	f = open(ISFILE, '+w')
 	br = mechanize.Browser()
 	br.set_handle_robots(False)
@@ -79,7 +83,8 @@ def getISsequencesFromISFinderDB(ISFILE,blastResTab):
 	try:
 		br.open("https://www-is.biotoul.fr/scripts/ficheIS.php?name=IS30")
 	except:
-		ssl._create_default_https_context = ssl._create_unverified_context
+		br.set_ca_data(context=ssl._create_unverified_context())
+		#ssl._create_default_https_context = ssl._create_unverified_context
 	for idx,IS in blastResTab.iterrows():
 		ISname = IS['Sequences producing significant alignments']
 		ISgroup = IS['Group']

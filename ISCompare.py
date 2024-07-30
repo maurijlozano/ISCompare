@@ -4,12 +4,12 @@ ISCompare is a program designed to look for and compare insertion sequence posit
 Written by Mauricio J. Lozano
 UNLP - CONICET - Instituto de Biotecnología y Biología Molecular (IBBM)
 '''
-VERSION="1.0.5"
+VERSION="1.0.7"
 REF="\n\n   Easy identification of insertion sequence mobilization events\n   in related bacterial strains with ISCompare. \n   E.G. Mogro, N. Ambrosis, M.J. Lozano\n   doi: https://doi.org/10.1093/g3journal/jkab181\n   Instituto de Biotecnología y Biología Molecular\n   CONICET - CCT La Plata - UNLP - FCE\n"
 GITHUB="https://github.com/maurijlozano/ISCompare"
 
 #Local modules
-import ISFinderBlast
+from ISCompare import ISFinderBlast
 #Third party modules
 from Bio import Entrez
 from Bio import SeqIO
@@ -72,7 +72,7 @@ def printSoftName():
 
 #********************************************************************************************************
 # FUNCTIONS
-def getRefSeqFromNCBIbyACC(acc,name):
+def getRefSeqFromNCBIbyACC(acc,name,log,outputDir,outputDirProvided):
 	#Retrieve GB file for the reference genome using accession numbers and NCBItools.
 	sequences = acc
 	if outputDirProvided:
@@ -110,13 +110,13 @@ def getRefSeqFromNCBIbyACC(acc,name):
 		f.close()
 	return name
 
-def extractFastaFromGB(seq):
+def extractFastaFromGB(seq,outputDir):
 	f = open(os.path.join(outputDir,seq+".fasta"), "w+")
 	fileBaseName = os.path.join(outputDir,seq)
 	SeqIO.convert(fileBaseName+'.gb', "gb", f, "fasta")
 	f.close()
 
-def getNumberOfScaffoldsFromGB(qseq):
+def getNumberOfScaffoldsFromGB(qseq,outputDir):
 	#Get the number of scaffolds
 	fileBaseName = os.path.join(outputDir , qseq)
 	records = list(SeqIO.parse(fileBaseName + ".gb", "genbank"))
@@ -126,7 +126,7 @@ def getNumberOfScaffoldsFromGB(qseq):
 			maxlen = len(record)
 	return(len(records),maxlen)
 
-def blastQuery2IS(query,ref,DBNAME,resFile):
+def blastQuery2IS(query,ref,DBNAME,resFile,outputDir,evalue,log):
 	#Blastn function to search for ISs
 	ncpu = multiprocessing.cpu_count()
 	dbIn = ref
@@ -138,7 +138,7 @@ def blastQuery2IS(query,ref,DBNAME,resFile):
 	log.flush()
 	pass
 
-def blastQuery2IS2(query,ref,DBNAME,resFile):
+def blastQuery2IS2(query,ref,DBNAME,resFile,outputDir,evalue,log):
 	#Blastn function to search for ISs in RAFS
 	ncpu=multiprocessing.cpu_count()
 	dbIn=ref
@@ -150,7 +150,7 @@ def blastQuery2IS2(query,ref,DBNAME,resFile):
 	log.flush()
 	pass
 
-def blastQuery2Ref(query,ref,DBNAME,resFile):
+def blastQuery2Ref(query,ref,DBNAME,resFile,outputDir,evalue,log):
 	#Blastn function to search for QIFS in reference genome
 	ncpu=multiprocessing.cpu_count()
 	dbIn=ref
@@ -162,7 +162,7 @@ def blastQuery2Ref(query,ref,DBNAME,resFile):
 	log.flush()
 	pass
 
-def blastQuery2Ref2(query,ref,DBNAME,resFile):
+def blastQuery2Ref2(query,ref,DBNAME,resFile,outputDir,evalue,log):
 	#Blastn function to search for identical scaffolds
 	ncpu=multiprocessing.cpu_count()
 	dbIn=ref
@@ -190,7 +190,7 @@ def removeIdenticalScaffolds(fileName,identicalToRef):
 	f2.close()
 	pass
 
-def findpairs(keep):
+def findpairs(keep,surroundingLen,minLength):
 	#Function to find QIFS pairs, by location on the refgenome
 	uniqueID=0
 	modedBlastResTab = pd.DataFrame(columns=list(keep.columns))
@@ -382,13 +382,13 @@ def findpairs(keep):
 					modedBlastResTab = concatPdTables(modedBlastResTab,scaffoldEntries)
 			uniqueID+=1
 		if len(modedBlastResTab) == 0:
-			modedBlastResTab['uniqueID'] = np.nan
-			modedBlastResTab['Reversed'] = np.nan
+			modedBlastResTab['uniqueID'] = ''
+			modedBlastResTab['Reversed'] = ''
 			modedBlastResTab['Extract'] = ""
 		return 	modedBlastResTab
 	else:
-		modedBlastResTab['uniqueID'] = np.nan
-		modedBlastResTab['Reversed'] = np.nan
+		modedBlastResTab['uniqueID'] = ''
+		modedBlastResTab['Reversed'] = ''
 		modedBlastResTab['Extract'] = ""
 		return 	modedBlastResTab
 
@@ -424,7 +424,7 @@ def getScaffoldsWithGoodQIFs(table):
 				modedBlastResTab = concatPdTables(modedBlastResTab,scaffoldEntries)
 	return modedBlastResTab
 
-def extractSeqFromGB(gbfileID,IStable,IStableName,surroundingLen, shift):
+def extractSeqFromGB(gbfileID,IStable,IStableName,surroundingLen, shift,outputDir,minLength):
 	#Extracts QIFS from GB file.
 	f = open(os.path.join(outputDir,IStableName+".fasta"), "w+")
 	fl = open(os.path.join(outputDir,IStableName+"_L.fasta"), "w+")
@@ -505,7 +505,7 @@ def extractSeqFromGB(gbfileID,IStable,IStableName,surroundingLen, shift):
 	fr.close()
 	pass
 
-def extractSeqFromREFGB(gbfileID,IStable,IStableName,surroundingLen2, shift):
+def extractSeqFromREFGB(gbfileID,IStable,IStableName,surroundingLen2, shift,outputDir):
 	#Extracts RAFS from genbank file.
 	f = open(os.path.join(outputDir,IStableName+".fasta"), "w+")
 	records = list(SeqIO.parse(gbfileID, "genbank"))
@@ -568,6 +568,10 @@ def concatPdTables(tab1,tab2):
 		tab2t = pd.DataFrame(tab2).transpose().copy()
 	else:
 		tab2t = tab2.copy()
+	if len(tab2t) == 0:
+		return(tab1t)
+	elif len(tab1t) == 0:
+		return(tab2t)
 	if 'ConsecutiveIS' in tab2t.columns:
 		tab2t['ConsecutiveIS'] = tab2t['ConsecutiveIS'].astype('bool')
 	if 'onlyRorL' in tab2t.columns:
@@ -602,7 +606,7 @@ def filterLowLen(blastResTab,ISdiff):
 				blastResTabfilter = concatPdTables(blastResTabfilter,row)
 	return(blastResTabfilter)
 
-def identifyIdenticalScaffolds(rseq, qseq, maxLenScaffolds,	scaffoldDiff):
+def identifyIdenticalScaffolds(rseq, qseq, maxLenScaffolds,	scaffoldDiff,outputDir,evalue,log):
 	#Removes identical scaffolds from the analysis.
 	#get number of scaffolds and largest scaffold len
 	shiftBasepairs = int(maxLenScaffolds/2)
@@ -622,9 +626,9 @@ def identifyIdenticalScaffolds(rseq, qseq, maxLenScaffolds,	scaffoldDiff):
 			f.write(">"+record.id+"_shiftedEnd"+"\n"+seq+"\n")
 		f.close()
 		refFileFastaAndShifted = os.path.join(outputDir,"shifted"+rseq+"End.fasta")
-		blastQuery2Ref2(queryFileFasta,refFileFastaAndShifted,REFDB,resfile)
+		blastQuery2Ref2(queryFileFasta,refFileFastaAndShifted,REFDB,resfile,outputDir,evalue,log)
 	else:
-		blastQuery2Ref2(queryFileFasta,refFileFasta,REFDB,resfile)
+		blastQuery2Ref2(queryFileFasta,refFileFasta,REFDB,resfile,outputDir,evalue,log)
 	#
 	resFilePath =   os.path.join(outputDir,qseq+"Genome2"+rseq+"Genome.res")
 	headerBlast = ['qseqid','sseqid','qlen','slen','length','qstart','qend','sstart','send','evalue','bitscore','qcovs','qcovhsp']
@@ -634,7 +638,7 @@ def identifyIdenticalScaffolds(rseq, qseq, maxLenScaffolds,	scaffoldDiff):
 	identicalToRef = blastResTab[blastResTab['sseqid']['count'] < 10]
 	return(identicalToRef)
 
-def tagConsecutiveIS(modedBlastResTab):
+def tagConsecutiveIS(modedBlastResTab,surroundingLen):
 	#Adds a flag for consecutive ISs.
 	if len(modedBlastResTab) > 0:
 		tagconsecutive = modedBlastResTab.sort_values(['qseqid','qstart'])
@@ -650,7 +654,7 @@ def tagConsecutiveIS(modedBlastResTab):
 					tagconsecutive.loc[i+1,'ConsecutiveIS'] = True
 	else:
 		tagconsecutive = modedBlastResTab
-		tagconsecutive['ConsecutiveIS'] = np.nan
+		tagconsecutive['ConsecutiveIS'] = ''
 	return(tagconsecutive)
 
 def modifyBlastResTab(blastResTab):
@@ -688,7 +692,7 @@ def modifyBlastResTab(blastResTab):
 			modedBlastResTab = 	concatPdTables(modedBlastResTab,scaffoldEntries)
 	return(modedBlastResTab)
 
-def findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta):
+def findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta,outputDir,isfile,evalue,log):
 	#Searches for ISs using blastn.
 	refFileGB = os.path.join(outputDir,rseq+".gb")
 	refFileFasta = os.path.join(outputDir,rseq+".fasta")
@@ -698,7 +702,7 @@ def findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta):
 	REFDB = rseq + "_DB"
 	#Step1: blasting Query genomes against IS database...
 	resFile = qseq + "IS.txt"
-	blastQuery2IS(queryFileFasta,ISFile,ISDB,resFile)
+	blastQuery2IS(queryFileFasta,ISFile,ISDB,resFile,outputDir,evalue,log)
 	#table processing
 	headerBlast = ['qseqid','sseqid','qlen','slen','length','qstart','qend','sstart','send','evalue','bitscore','qcovs']
 	resFilePath = os.path.join(outputDir,resFile)
@@ -708,7 +712,7 @@ def findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta):
 	totalISFound=len(modedBlastResTab)
 	#filter short IS that are not located near and end of the scaffold
 	#Also discard scaffolds that have a small length and match all its length with an IS hit.
-	modedBlastResTab = tagConsecutiveIS(modedBlastResTab)
+	modedBlastResTab = tagConsecutiveIS(modedBlastResTab,surroundingLen)
 	modedBlastResTab = filterLowLen(modedBlastResTab,ISdiff)
 	modedBlastResTab = modifyBlastResTab(modedBlastResTab)
 	processedIS=len(modedBlastResTab)
@@ -722,7 +726,7 @@ def findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta):
 	modedBlastResTab = modedBlastResTab.reset_index(drop=True)
 	return(modedBlastResTab,stats)
 
-def testMiddleIS(rseq, qseq, modedBlastResTab):
+def testMiddleIS(rseq, qseq, modedBlastResTab,outputDir,isfile,surroundingLen,shift,minLength,evalue,log):
 	#Searches for IS location chages using full length QIFS matches.
 	#rseq and qseq contain the basename of the concatenated gb file!
 	refFileGB = os.path.join(outputDir,rseq+".gb")
@@ -733,10 +737,10 @@ def testMiddleIS(rseq, qseq, modedBlastResTab):
 	REFDB = rseq + "_DB"
 	headerBlast = ['qseqid','sseqid','qlen','slen','length','qstart','qend','sstart','send','evalue','bitscore','qcovs']
 	querySurroundings = qseq + "_surroundings"
-	extractSeqFromGB(queryFile,modedBlastResTab,querySurroundings,surroundingLen,shift)
+	extractSeqFromGB(queryFile,modedBlastResTab,querySurroundings,surroundingLen,shift,outputDir,minLength)
 	qsurroundings = os.path.join(outputDir, querySurroundings + ".fasta")
 	testISfile = qseq + "_" + qseq + "_testIS.txt"
-	blastQuery2IS2(qsurroundings,ISFile,ISDB,testISfile)
+	blastQuery2IS2(qsurroundings,ISFile,ISDB,testISfile,outputDir,evalue,log)
 	resFilePath = os.path.join(outputDir,testISfile)
 	consecutiveIS = pd.read_csv(resFilePath,sep='\t',names=headerBlast)
 	if len(consecutiveIS) > 0:
@@ -753,13 +757,13 @@ def testMiddleIS(rseq, qseq, modedBlastResTab):
 		consecutiveIS = consecutiveIS[consecutiveIS['qseqid'].isin(consecutiveISUQ)]
 		consecutiveIS = consecutiveIS.reset_index(drop=True)
 	else:
-		consecutiveIS["ISID"]  = np.nan
+		consecutiveIS["ISID"]  = ''
 		consecutiveIS['SameIS'] = False
 		consecutiveISUQ = list(consecutiveIS['qseqid'].unique())
 	#******
 	outfile = qsurroundings
 	resFile = qseq + "_surroundingBlastRes.txt"
-	blastQuery2Ref(outfile,refFileFasta,REFDB,resFile)
+	blastQuery2Ref(outfile,refFileFasta,REFDB,resFile,outputDir,evalue,log)
 	resFilePath = os.path.join(outputDir,resFile)
 	blastResTab = pd.read_csv(resFilePath,sep='\t',names=headerBlast)
 	if len(blastResTab) > 0:
@@ -772,7 +776,7 @@ def testMiddleIS(rseq, qseq, modedBlastResTab):
 		blastResTab.iloc[:,14] = pd.to_numeric(blastResTab.iloc[:,14])
 		blastResTab["tag"] = blastResTab.apply(lambda x: re.sub(r'^[^*]*(\*?\*?)$','\\1',x["qseqid"]), axis=1)
 	else:
-		blastResTab["Scaffold"] = np.nan
+		blastResTab["Scaffold"] = ''
 		blastResTab["start"]  = np.nan
 		blastResTab["end"] = np.nan
 		blastResTab["end"] = np.nan
@@ -791,8 +795,8 @@ def testMiddleIS(rseq, qseq, modedBlastResTab):
 		missingQueryIS.loc[missingQueryIS[missingQueryIS['tag'] == '*'].index,'IS_Match_Type'] = 'Partial IS hit.'
 		missingQueryIS.loc[missingQueryIS[missingQueryIS['tag'] == '**'].index,'IS_Match_Type'] = 'Partial or unspecific IS hit.'
 	else:
-		missingQueryIS['Observations'] = np.nan
-		missingQueryIS['IS_Match_Type'] = np.nan
+		missingQueryIS['Observations'] = ''
+		missingQueryIS['IS_Match_Type'] = ''
 	missingQueryIS = missingQueryIS.iloc[:,[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,16,17]]
 	missingQueryIS = missingQueryIS.reset_index(drop=True)
 	for idx,row in missingQueryIS.iterrows():
@@ -800,7 +804,7 @@ def testMiddleIS(rseq, qseq, modedBlastResTab):
 		missingQueryIS.loc[idx,'send'] = max(row['sstart'],row['send'])
 	return(missingQueryIS,consecutiveIS)
 
-def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
+def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS,outputDir,minLength,minAlnLength,surroundingLen,shift,args,isfile,evalue,log):
 	#Searches for IS location changes using half QIFS matches.
 	refFileGB = os.path.join(outputDir,rseq+".gb")
 	refFileFasta = os.path.join(outputDir,rseq+".fasta")
@@ -815,20 +819,20 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	resFile_L = qseq + "_surroundingBlastRes_L.txt"
 	resFile_R = qseq + "_surroundingBlastRes_R.txt"
 	# Blast 2 flanks independently and merge tables
-	blastQuery2Ref(qsurroundings_L,refFileFasta,REFDB,resFile_L)
-	blastQuery2Ref(qsurroundings_R,refFileFasta,REFDB,resFile_R)
+	blastQuery2Ref(qsurroundings_L,refFileFasta,REFDB,resFile_L,outputDir,evalue,log)
+	blastQuery2Ref(qsurroundings_R,refFileFasta,REFDB,resFile_R,outputDir,evalue,log)
 	resFilePath = os.path.join(outputDir , resFile_L)
 	blastResTab = pd.read_csv(resFilePath,sep='\t',names=headerBlast)
 	if len(blastResTab) > 0:
 		blastResTab["Flank"] = "L"
 	else:
-		blastResTab["Flank"] = np.nan
+		blastResTab["Flank"] = ''
 	resFilePath = os.path.join(outputDir , resFile_R)
 	blastResTab_R = pd.read_csv(resFilePath,sep='\t',names=headerBlast)
 	if len(blastResTab_R) > 0:
 		blastResTab_R["Flank"] = "R"
 	else:
-		blastResTab_R["Flank"] = np.nan
+		blastResTab_R["Flank"] = ''
 	blastResTab = concatPdTables(blastResTab,blastResTab_R)
 	blastResTab = blastResTab.reset_index(drop=True)
 	#Process tables
@@ -853,22 +857,22 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 			blastResTab.loc[idx,"qcovh"] = blastResTab.loc[idx]["length"]/blastResTab.loc[idx]["qlen"]
 			blastResTab["ISID"] = blastResTab.apply(lambda x: re.sub(r'^.*\|IS:([^|]*).*$','\\1',x["qseqid"]), axis=1)
 	else:
-		blastResTab["Scaffold"] = np.nan
+		blastResTab["Scaffold"] = ''
 		blastResTab["start"] = np.nan
 		blastResTab["end"] = np.nan
 		blastResTab["Lend"] = np.nan
 		blastResTab["Rstart"] = np.nan
 		blastResTab["Llen"] = np.nan
 		blastResTab["Rlen"] = np.nan
-		blastResTab["onlyRorL"] = np.nan
+		blastResTab["onlyRorL"] = ''
 		blastResTab["cutoff"] = np.nan
 		blastResTab["qcovh"] = np.nan
-		blastResTab["ISID"] = np.nan
+		blastResTab["ISID"] = ''
 	#filter only left or right or both sides sequences blast hits by cutoffs. Partial or bad hits.
 	keep = blastResTab[(blastResTab['length'] > minAlnLength) & (blastResTab['qcovh'] > blastResTab["cutoff"])]
 	#Find pairs of hits, each half of the concatenated sequence
 	keepUL = list(keep['qseqid'].unique())
-	keep = findpairs(keep)
+	keep = findpairs(keep,surroundingLen,minLength)
 	#
 	#Discard mathces on scaffold ends,
 	matchOnScaffoldEnd = keep[((keep['sstart'] < 25) & (keep['Extract'] == 'L'))]
@@ -879,11 +883,11 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	#extract sequences near the surroundings on ref genome...Needs sstart, send...
 	#refstart and refend are the positions of query-IS match with ref!
 	refISSurroundsFromQuery = qseq + "_" + rseq + "ISSurroundsFrom" + qseq
-	extractSeqFromREFGB(refFileGB,keep,refISSurroundsFromQuery,surroundingLen,shift)
+	extractSeqFromREFGB(refFileGB,keep,refISSurroundsFromQuery,surroundingLen,shift,outputDir)
 	refISSurroundsFromQuery = os.path.join(outputDir , refISSurroundsFromQuery + ".fasta")
 	#Blast extracted sequences to IS!
 	testISfile = qseq + "_" + rseq + "_testIS.txt"
-	blastQuery2IS2(refISSurroundsFromQuery,ISFile,ISDB,testISfile)
+	blastQuery2IS2(refISSurroundsFromQuery,ISFile,ISDB,testISfile,outputDir,evalue,log)
 	#Load table and determine sequences surrounded by IS on reference
 	resFilePath = os.path.join(outputDir,testISfile)
 	blastResTab2 = pd.read_csv(resFilePath,sep='\t',names=headerBlast)
@@ -901,9 +905,9 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	else:
 		blastResTab2["refstart"] = np.nan
 		blastResTab2["refend"] = np.nan
-		blastResTab2["Query.ID"] = np.nan
-		blastResTab2["ISID"] = np.nan
-		blastResTab2["uniqueID"] = np.nan
+		blastResTab2["Query.ID"] = ''
+		blastResTab2["ISID"] = ''
+		blastResTab2["uniqueID"] = ''
 	#
 	#eq IS, this because different IS may represent positives
 	for idx,row in blastResTab2.iterrows():
@@ -994,9 +998,9 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	analyzedScaffolds = pd.DataFrame({'qseqid':analyzedScaffolds}, dtype=object)
 	analyzedScaffolds = analyzedScaffolds[~analyzedScaffolds['qseqid'].isin(MiddleMissingISID)]
 	analyzedScaffolds['Scaffold_count'] = np.nan
-	analyzedScaffolds["uniqueID"] = np.nan
-	analyzedScaffolds['sseqid_first'] = np.nan
-	analyzedScaffolds['sseqid_last'] = np.nan
+	analyzedScaffolds["uniqueID"] = ''
+	analyzedScaffolds['sseqid_first'] = ''
+	analyzedScaffolds['sseqid_last'] = ''
 	if len(analyzedScaffolds) > 0:
 		analyzedScaffolds["ISID"] = analyzedScaffolds.apply(lambda x: re.sub(r'^.*\|IS:([^|]*).*$','\\1',x["qseqid"]), axis=1)
 		analyzedScaffolds["start"] = analyzedScaffolds.apply(lambda x: re.sub(r'^.*\|LEFT_start:([0-9]{1,10})\|.*$','\\1',x["qseqid"]), axis=1)
@@ -1004,7 +1008,7 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 		analyzedScaffolds["Lend"] = analyzedScaffolds.apply(lambda x: re.sub(r'^.*\|LEFT_End:([0-9]{1,10})\|.*$','\\1',x["qseqid"]), axis=1)
 		analyzedScaffolds["Rstart"] = analyzedScaffolds.apply(lambda x: re.sub(r'^.*\|RIGHT_start:([0-9]{1,10})\|.*$','\\1',x["qseqid"]), axis=1)
 	else:
-		analyzedScaffolds["ISID"] = np.nan
+		analyzedScaffolds["ISID"] = ''
 		analyzedScaffolds["start"] = np.nan
 		analyzedScaffolds["end"] = np.nan
 		analyzedScaffolds["Lend"] = np.nan
@@ -1041,7 +1045,6 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 	group.columns = [re.sub('_$','','_'.join(col).strip()) for col in group.columns.values]
 	group = group.reset_index(drop=True)
 	groupList = list(group['qseqid'].unique())
-	#
 	for idx, row in missedScaffolds.iterrows():
 		if len(group[group['qseqid'] == row['qseqid']]) == 1:
 			missedScaffolds.loc[idx,'sseqid_first'] = group[group['qseqid'] == row['qseqid']]['sseqid_first'].iloc[0]
@@ -1062,20 +1065,21 @@ def testIS(rseq, qseq,MiddleMissingISID,consecutiveIS):
 		missingQueryIS2.loc[missingQueryIS2[missingQueryIS2['tag'] == '*'].index,'IS_Match_Type'] = 'Partial IS hit.'
 		missingQueryIS2.loc[missingQueryIS2[missingQueryIS2['tag'] == '**'].index,'IS_Match_Type'] = 'Partial or unspecific IS hit.'
 	else:
-		missingQueryIS2["Scaffold"] = np.nan
-		missingQueryIS2['IS_Match_Type'] = np.nan
+		missingQueryIS2["Scaffold"] = ''
+		missingQueryIS2['IS_Match_Type'] = ''
 	#
 	missingQueryIS2 = missingQueryIS2.reset_index(drop=True)
 	missingQueryIS2 = missingQueryIS2.iloc[:,0:20]
 	for idx,row in missingQueryIS2.iterrows():
 		if row['sstart_first'] == row['sstart_last']:
-			missingQueryIS2.loc[idx, ['sseqid_last','sstart_last','send_last']] = np.nan
+			missingQueryIS2.loc[idx, 'sseqid_last'] = ''
+			missingQueryIS2.loc[idx, ['sstart_last','send_last']] = np.nan
 		if row['sseqid_first'] == row['sseqid_last']:
-			missingQueryIS2.loc[idx, ['sseqid_last']] = np.nan
+			missingQueryIS2.loc[idx, ['sseqid_last']] = ''
 	#
 	return missingQueryIS2
 
-def annotateTable(results):
+def annotateTable(results,queryRecords,refRecords,surroundingLen):
 	columns = list(results.columns)
 	columns.extend(["QUERY_Flank1.locus_tag","QUERY_Flank1.Product","QUERY_Flank2.locus_tag","QUERY_Flank2.Product","REF_Flank1.locus_tag","REF.Product_Flank1","REF_Flank2.locus_tag","REF.Product_Flank2","Scaffold_Size"])
 	FinalResults = pd.DataFrame(columns = columns)
@@ -1144,7 +1148,7 @@ def annotateTable(results):
 				resultList.extend(["-","-","-","-"])
 			#Annotate ref
 			#left flank
-			if not pd.isna(result["REF.ID1"]):
+			if result["REF.ID1"] != '':
 				rr = refRecords[result["REF.ID1"]]
 				featureList = [feature for feature in rr.features if feature.type == 'CDS']
 				scaffoldSize = len(rr)
@@ -1223,7 +1227,7 @@ def annotateTable(results):
 			else:
 				resultList.extend(["-","-"])
 			#right flank on same contig on only one flank
-			if not pd.isna(result["REF.ID1"]) and pd.isna(result["REF.ID2"]) and not start1toEnd2:
+			if (result["REF.ID1"] != '') and (result["REF.ID2"] != '') and not start1toEnd2:
 				rr = refRecords[result["REF.ID1"]]
 				featureList = [feature for feature in rr.features if feature.type == 'CDS']
 				scaffoldSize = len(rr)
@@ -1258,7 +1262,8 @@ def annotateTable(results):
 				else:
 					resultList.extend(["-","-"])
 			#right flank on different contig
-			elif not pd.isna(result["REF.ID2"]) and not start1toEnd2:
+			elif (result["REF.ID2"] != '') and not start1toEnd2:
+				print(str(result["REF.ID2"]))
 				rr = refRecords[result["REF.ID2"]]
 				featureList = [feature for feature in rr.features if feature.type == 'CDS']
 				scaffoldSize = len(rr)
@@ -1297,7 +1302,7 @@ def annotateTable(results):
 		#** ref ***********************************************************
 		elif result["Description"] == "IS only present in ref Strain.":
 			# annotate query
-			if not pd.isna(result["Query.ID1"]):
+			if result["Query.ID1"] != '':
 				qr = queryRecords[result["Query.ID1"]]
 				featureList = [feature for feature in qr.features if feature.type == 'CDS']
 				scaffoldSize = len(qr)
@@ -1377,7 +1382,7 @@ def annotateTable(results):
 			else:
 				resultList.extend(["-","-"])
 			#right flank on the same contig or only one flank
-			if not pd.isna(result["Query.ID1"]) and pd.isna(result["Query.ID2"]) and not start1toEnd2:
+			if (result["Query.ID1"] != '') and (result["Query.ID2"] != '') and not start1toEnd2:
 				qr = queryRecords[result["Query.ID1"]]
 				featureList = [feature for feature in qr.features if feature.type == 'CDS']
 				scaffoldSize = len(qr)
@@ -1412,7 +1417,7 @@ def annotateTable(results):
 				else:
 					resultList.extend(["-","-"])
 			#right flank on differnet contigs
-			elif not pd.isna(result["Query.ID2"]) and not start1toEnd2:
+			elif (result["Query.ID2"] != '') and not start1toEnd2:
 				qr = queryRecords[result["Query.ID2"]]
 				featureList = [feature for feature in qr.features if feature.type == 'CDS']
 				scaffoldSize = len(qr)
@@ -1581,7 +1586,7 @@ def recordsDict(filename):
 		recordsDictionary[record.id] = modifyWarpingFeatures(record)
 	return 	recordsDictionary
 
-def plot_funcs(ISs, max_row, page):
+def plot_funcs(ISs, max_row, page,refRecords,queryRecords,shift):
 	"""
 	Function that plots all given ISs in multiple figs, to accomodate max_col * max_row
 	IS per page.
@@ -1647,7 +1652,7 @@ def plot_funcs(ISs, max_row, page):
 					record1 = refRecords[REFID1]
 					recordLength1 = len(record1)
 					#REF.ID2 != nan
-					if REFID2 == REFID2:
+					if REFID2:
 						if Rstart1 - 3000 < 1:
 							Rstart1 = 1
 						else:
@@ -1833,7 +1838,7 @@ def plot_funcs(ISs, max_row, page):
 					record1 = queryRecords[REFID1]
 					recordLength1 = len(record1)
 					#REF.ID2 != nan
-					if REFID2 == REFID2:
+					if REFID2:
 						if Rstart1 - 3000 < 1:
 							Rstart1 = 1
 						else:
@@ -1990,7 +1995,7 @@ def checkFiles(filePath):
 #********************************************************************************************************
 #********************************************************************************************************
 # Main
-if __name__ == "__main__":
+def main():
 	#Presentation
 	printSoftName()
 	#Argument parsing
@@ -2113,7 +2118,7 @@ if __name__ == "__main__":
 		f.close()
 		f2.close()
 		qseq = "query"
-		extractFastaFromGB(qseq)
+		extractFastaFromGB(qseq,outputDir)
 		print(qseq + ".fasta generated.")
 		newPath = outputDir+'/ref.gb'
 		f=open(newPath, "w+")
@@ -2124,7 +2129,7 @@ if __name__ == "__main__":
 		rseq = "ref"
 		f.close()
 		f2.close()
-		extractFastaFromGB(rseq)
+		extractFastaFromGB(rseq,outputDir)
 		print(rseq + ".fasta generated.")
 	#
 	#Mode 1, download files from NCBI
@@ -2133,8 +2138,8 @@ if __name__ == "__main__":
 		log.flush()
 		print(Entrez.email)
 		print("Downloading Query: "+str(qacc)+" and Ref: "+str(racc)+" sequences.")
-		qseq = getRefSeqFromNCBIbyACC(qacc,"query")
-		rseq = getRefSeqFromNCBIbyACC(racc,"ref")
+		qseq = getRefSeqFromNCBIbyACC(qacc,"query",log,outputDir,outputDirProvided)
+		rseq = getRefSeqFromNCBIbyACC(racc,"ref",log,outputDir,outputDirProvided)
 	#
 	#ISFile
 	if args.isfile:
@@ -2166,19 +2171,19 @@ if __name__ == "__main__":
 	#************************************************************************
 	#************************************************************************
 	queryFileFasta = os.path.join(outputDir,qseq+".fasta")
-	totalqueryIS, totalstatsQuery = findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta)
+	totalqueryIS, totalstatsQuery = findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta,outputDir,isfile,evalue,log)
 	print(str(len(totalqueryIS)) + " ISs found on the query genome...")
 	log.write(str(len(totalqueryIS)) + " ISs found on the query genome...")
 	if len(totalqueryIS) == 0:
 		print("The selected Insertion sequences were not found on the query genome...")
 		log.write("The selected Insertion sequences were not found on the query genome...")
 	log.flush()
-	nscaffolds, maxLenScaffolds = getNumberOfScaffoldsFromGB(qseq)
+	nscaffolds, maxLenScaffolds = getNumberOfScaffoldsFromGB(qseq,outputDir)
 	if args.remove:
 		print("Step1: Removing identical scaffolds: Query --> Reference ...")
 		log.write("Step1: Removing identical scaffolds: Query --> Reference ...")
 		log.flush()
-		identicalScaffolds = identifyIdenticalScaffolds(rseq, qseq, maxLenScaffolds,scaffoldDiff)
+		identicalScaffolds = identifyIdenticalScaffolds(rseq, qseq, maxLenScaffolds,scaffoldDiff,outputDir,evalue,log)
 		removeIdenticalScaffolds(queryFileFasta, identicalScaffolds)
 		print(str(len(identicalScaffolds)) + " identical scaffolds removed from the analysis...")
 		log.write(str(len(identicalScaffolds)) + " identical scaffolds removed from the analysis...")
@@ -2194,20 +2199,20 @@ if __name__ == "__main__":
 	log.write("Step2: Testing for new IS on the query...")
 	log.flush()
 
-	queryIS, statsQuery = findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta)
+	queryIS, statsQuery = findISsOnQuery(rseq,qseq,ISdiff,surroundingLen,queryFileFasta,outputDir,isfile,evalue,log)
 	# Consecutive iSs, get a list of the consecutive ISs on queryIS
 	ConsecutiveISQuery = queryIS[queryIS['ConsecutiveIS']]
-	MiddleMissingIS, consecutiveIS= testMiddleIS(rseq, qseq, queryIS)
+	MiddleMissingIS, consecutiveIS= testMiddleIS(rseq, qseq, queryIS,outputDir,isfile,surroundingLen,shift,minLength,evalue,log)
 	MiddleMissingISID = MiddleMissingIS['qseqid']
 	MiddleMissingIS = MiddleMissingIS[['qseqid','sseqid','start', 'end', 'sstart', 'send', 'Scaffold', 'Observations','IS_Match_Type']]
 	MiddleMissingIS['sseqid_first'] = MiddleMissingIS['sseqid']
-	MiddleMissingIS['sseqid_last'] = np.nan
+	MiddleMissingIS['sseqid_last'] = ''
 	MiddleMissingIS['sstart_first'] = MiddleMissingIS['sstart']
 	MiddleMissingIS['sstart_last'] = MiddleMissingIS['send_first'] = np.nan
 	MiddleMissingIS['send_last'] = MiddleMissingIS['send']
 	MiddleMissingIS = MiddleMissingIS[['qseqid','sseqid_first','sseqid_last', 'start', 'end', 'sstart_first','send_first','sstart_last','send_last', 'Scaffold', 'Observations', 'IS_Match_Type']]
 	#
-	missingIS = testIS(rseq, qseq,MiddleMissingISID,consecutiveIS)
+	missingIS = testIS(rseq, qseq,MiddleMissingISID,consecutiveIS,outputDir,minLength,minAlnLength,surroundingLen,shift,args,isfile,evalue,log)
 	missingIS = missingIS[['qseqid','sseqid_first','sseqid_last', 'start', 'end', 'sstart_first','send_first','sstart_last','send_last', 'Scaffold', 'Observations', 'IS_Match_Type']]
 	#join tables
 	missingIS = concatPdTables(missingIS,MiddleMissingIS)
@@ -2222,12 +2227,12 @@ if __name__ == "__main__":
 	else:
 		missingIS["ISstart"] = np.nan
 		missingIS["ISend"] = np.nan
-		missingIS["ISID"]  = np.nan
+		missingIS["ISID"]  = ''
 		#
 		missingIS["Lend"]  = np.nan
 		missingIS["Rstart"]  = np.nan
 	#
-	missingIS['Scaffold2'] = np.nan
+	missingIS['Scaffold2'] = ''
 	results = missingIS[["ISID","ISstart","ISend","Scaffold","start","Lend","Scaffold2","Rstart","end","sseqid_first","sstart_first","send_first","sseqid_last","sstart_last","send_last","Description","Observations","IS_Match_Type"]]
 	columns = ["ISID","ISstart","ISend","Query.ID1","Start1","End1","Query.ID2","Start2","End2", "REF.ID1","REF.Start1","REF.End1","REF.ID2","REF.Start2","REF.End2","Description","Observations","IS_Match_Type"]
 	results.columns = columns
@@ -2236,19 +2241,19 @@ if __name__ == "__main__":
 	#************************************************************************
 	#************************************************************************
 	refFileFasta = os.path.join(outputDir,rseq+".fasta")
-	totalrefIS, totalstatsRef = findISsOnQuery(qseq,rseq,ISdiff,surroundingLen,refFileFasta)
+	totalrefIS, totalstatsRef = findISsOnQuery(qseq,rseq,ISdiff,surroundingLen,refFileFasta,outputDir,isfile,evalue,log)
 	print(str(len(totalrefIS)) + " ISs found on the reference genome...")
 	log.write(str(len(totalrefIS)) + " ISs found on the reference genome...")
 	if len(totalrefIS) == 0:
 		print("The selected Insertion sequences were not found on the reference genome...")
 		log.write("The selected Insertion sequences were not found on the reference genome...")
 	log.flush()
-	nscaffoldsRef, maxLenScaffoldsRef = getNumberOfScaffoldsFromGB(rseq)
+	nscaffoldsRef, maxLenScaffoldsRef = getNumberOfScaffoldsFromGB(rseq,outputDir)
 	if args.remove:
 		print("Step3: Removing identical scaffolds: Reference --> Query ...")
 		log.write("Step3: Removing identical scaffolds: Reference --> Query ...")
 		log.flush()
-		identicalScaffoldsRef = identifyIdenticalScaffolds(qseq, rseq, maxLenScaffoldsRef,scaffoldDiff)
+		identicalScaffoldsRef = identifyIdenticalScaffolds(qseq, rseq, maxLenScaffoldsRef,scaffoldDiff,outputDir,evalue,log)
 		removeIdenticalScaffolds(refFileFasta, identicalScaffoldsRef)
 		print(str(len(identicalScaffoldsRef)) + " identical scaffolds removed from the analysis...")
 		log.write(str(len(identicalScaffoldsRef)) + " identical scaffolds removed from the analysis...")
@@ -2263,19 +2268,19 @@ if __name__ == "__main__":
 	print("Step4: Testing for IS missing on the query...")
 	log.write("Step4: Testing for IS missing on the query...")
 	log.flush()
-	refIS, statsRef = findISsOnQuery(qseq,rseq,ISdiff,surroundingLen,refFileFasta)
+	refIS, statsRef = findISsOnQuery(qseq,rseq,ISdiff,surroundingLen,refFileFasta,outputDir,isfile,evalue,log)
 	# Consecutive iSs, get a list of the consecutive ISs on queryIS
 	ConsecutiveISRef = refIS[refIS['ConsecutiveIS']]
 	#
-	MiddleMissingIS, consecutiveIS = testMiddleIS(qseq, rseq, refIS)
+	MiddleMissingIS, consecutiveIS = testMiddleIS(qseq, rseq, refIS,outputDir,isfile,surroundingLen,shift,minLength,evalue,log)
 	MiddleMissingISID = MiddleMissingIS['qseqid']
 	MiddleMissingIS = MiddleMissingIS[['qseqid','sseqid','start', 'end', 'sstart', 'send', 'Scaffold', 'Observations','IS_Match_Type']]
 	MiddleMissingIS['sseqid_first'] = MiddleMissingIS['sseqid']
-	MiddleMissingIS['sseqid_last'] = np.nan
+	MiddleMissingIS['sseqid_last'] = ''
 	MiddleMissingIS['sstart_first'] = MiddleMissingIS['sstart']
 	MiddleMissingIS['sstart_last'] = MiddleMissingIS['send_first'] = np.nan
 	MiddleMissingIS['send_last'] = MiddleMissingIS['send']
-	missingIS = testIS(qseq,rseq,MiddleMissingISID,consecutiveIS)
+	missingIS = testIS(qseq,rseq,MiddleMissingISID,consecutiveIS,outputDir,minLength,minAlnLength,surroundingLen,shift,args,isfile,evalue,log)
 	missingIS = missingIS[['qseqid','sseqid_first','sseqid_last', 'start', 'end', 'sstart_first','send_first','sstart_last','send_last', 'Scaffold', 'Observations', 'IS_Match_Type']]
 	# Join tables
 	missingIS = concatPdTables(missingIS,MiddleMissingIS)
@@ -2290,11 +2295,11 @@ if __name__ == "__main__":
 	else:
 		missingIS["ISstart"] = np.nan
 		missingIS["ISend"] = np.nan
-		missingIS["ISID"]  = np.nan
+		missingIS["ISID"]  = ''
 		missingIS["Lend"]  = np.nan
 		missingIS["Rstart"]  = np.nan
 	#
-	missingIS['Scaffold2'] = np.nan
+	missingIS['Scaffold2'] = ''
 	results2 = 	missingIS[["ISID","ISstart","ISend","sseqid_first","sstart_first","send_first","sseqid_last","sstart_last","send_last","Scaffold","start","Lend","Scaffold2","Rstart","end","Description","Observations","IS_Match_Type"]]
 	columns = ["ISID","ISstart","ISend","Query.ID1","Start1","End1","Query.ID2","Start2","End2", "REF.ID1","REF.Start1","REF.End1","REF.ID2","REF.Start2","REF.End2","Description","Observations","IS_Match_Type"]
 	results2.columns = columns
@@ -2324,7 +2329,7 @@ if __name__ == "__main__":
 	# queryAnno = genbankToFT(queryFile)
 	queryRecords = recordsDict(queryFile)
 	refRecords = recordsDict(refFileGB)
-	FinalResults = annotateTable(results)
+	FinalResults = annotateTable(results,queryRecords,refRecords,surroundingLen)
 	#
 	#save tables..
 	FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']] = FinalResults[['ISstart', 'ISend', 'Start1', 'End1', 'REF.Start1','REF.End1','Start2', 'End2', 'REF.Start2','REF.End2']].astype("float")
@@ -2399,7 +2404,7 @@ if __name__ == "__main__":
 		page = 1
 		with PdfPages(outputDir+'/ISGraphicReport.pdf') as pdf:
 			for ISs in niter(FinalResults, plotsPerPage):
-				figs = plot_funcs(ISs, plotsPerPage,page)
+				figs = plot_funcs(ISs, plotsPerPage,page,refRecords,queryRecords,shift)
 				for fig in figs:
 					plt.figure(fig.number)
 					pdf.savefig()
@@ -2425,4 +2430,7 @@ if __name__ == "__main__":
 	print('Done, the results are on ' + outputDir + '/FinalResults.csv file.\n* Please also check the consecutivIS.csv table for a report\n  of consecutive insertion sequences.\n** QueryIS and RefIS tables contain information of the insertion\n   sequences detected.\n*** Stats.txt contains a report of the IS found.\n**** Running with -p option the ISGraphicReport.pdf file containing \n     a graphic display of the IS genomic location will be \n     generated.')
 	log.flush()
 	log.close()
+
+if __name__ == "__main__":
+	main()
 #END
