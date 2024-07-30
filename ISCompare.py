@@ -9,7 +9,7 @@ REF="\n\n   Easy identification of insertion sequence mobilization events\n   in
 GITHUB="https://github.com/maurijlozano/ISCompare"
 
 #Local modules
-from ISCompare import ISFinderBlast
+import ISFinderBlast
 #Third party modules
 from Bio import Entrez
 from Bio import SeqIO
